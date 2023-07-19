@@ -3,7 +3,7 @@ Learning compiler
 
 Build|Linux|Windows
 ---|---|---
-status|[![GitHub CI build status](https://github.com/Wodan58/Mcc/actions/workflows/cmake.yml/badge.svg)](https://github.com/Wodan58/Mcc/actions/workflows/cmake.yml)|[![AppVeyor CI build status](https://ci.appveyor.com/api/projects/status/github/Wodan58/Mcc?branch=master&svg=true)](https://ci.appveyor.com/project/Wodan58/Mcc)
+status|[![GitHub CI build status](https://github.com/Wodan58/Mcc/actions/workflows/cmake.yml/badge.svg)](https://github.com/Wodan58/Mcc/actions/workflows/cmake.yml)|[![AppVeyor CI build status](https://ci.appveyor.com/api/projects/status/jcjka1b5vovhwmyk?svg=true)](https://ci.appveyor.com/project/Wodan58/Mcc)
 
 This project implements a C compiler, following the road map of
 [chibicc](https://github.com/rui314/chibicc).
