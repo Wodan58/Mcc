@@ -26,7 +26,7 @@ the heap.
 
 Chibicc uses make as the build system. I'll use Cmake instead.
 
-In short, I'll follow the 316+ steps that are needed to build a modern C
+In short, I'll follow the 345+ steps that are needed to build a modern C
 compiler, but I'll do it my way.
 
 The aim is to learn. The final product is of secondary importance.
@@ -37,8 +37,3 @@ INSTALL
     cd build
     cmake ..
     cmake --build .
-
-RUNNING
--------
-
-    ./run.sh
