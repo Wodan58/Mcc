@@ -1,6 +1,6 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.4
+#   version : 1.5
 #   date    : 07/20/23
 #
 cmake_minimum_required(VERSION 3.0)
@@ -24,8 +24,11 @@ add_definitions(-DVERSION="${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
 add_executable(mcc mcc.c ${FLEX_MyScanner_OUTPUTS} ${BISON_MyParser_OUTPUTS}
                name.c)
 add_executable(mcd mcd.c name.c)
+add_dependencies(mcd mcc)
 add_executable(mci mci.c name.c)
+add_dependencies(mci mcc)
 add_executable(mca mca.c)
+add_dependencies(mca mcc)
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 # target_link_libraries(mcc gc-lib)
 # include_directories(bdwgc/include)
