@@ -1,0 +1,345 @@
+	Compile an integer
+	Add + and - operators
+	Add a tokenizer to allow space characters between tokens
+	Improve error message
+	Add *, / and ()
+	Add unary plus and minus
+	Add ==, !=, <= and >= operators
+	Split main.c into multiple small files
+	Accept multiple statements separated by semicolons
+	Support single-letter local variables
+	Support multi-letter local variables
+	Add "return" statement
+	Add { ... }
+	Add null statement
+	Add "if" statement
+	Add "for" statement
+	Add "while" statement
+	Add LICENSE and README.md
+	Add a representative node to each Node to improve error messages
+	Add unary & and *
+	Make pointer arithmetic work
+	Add keyword "int" and make variable definition mandatory
+	Support zero-arity function calls
+	Support function call with up to 6 arguments
+	Add one dimensional arrays
+	Add arrays of arrays
+	Add [] operator
+	Add sizeof
+	Merge Function with Var
+	Add global variables
+	Add char type
+	Add string literal
+	Refactoring: Add a utility function
+	Add \a, \b, \t, \n, \v, \f, \r and \e
+	Add \<octal sequence>
+	Add \x<hexadecimal sequence>
+	[GNU] Add statement expression
+	Read code from a file instead of argv[1]
+	Refactor -- no functionality change
+	Add -o and --help options
+	Add line and block comments
+	Handle block scope
+	Rewrite tests in shell script in C
+	Precompute line number for each token
+	Emit .file and .loc assembler directives
+	Add comma operator
+	Add struct
+	Align struct members
+	Align local variables
+	Support struct tags
+	Add -> operator
+	Add union
+	Add struct assignment
+	Change size of int from 8 to 4
+	Add long type
+	Add short type
+	Add nested type declarators
+	Add function declaration
+	Add void type
+	Handle complex type declarations correctly
+	Add long long as an alias for long
+	Add typedef
+	Make sizeof to accept not only an expression but also a typename
+	Use 32 bit registers for char, short and int
+	Add type cast
+	Implement usual arithmetic conversion
+	Report an error on undefined/undeclared functions
+	Handle return type conversion
+	Handle function argument type conversion
+	Add _Bool type
+	Add character literal
+	Add enum
+	Support file-scope functions
+	Allow for-loops to define local variables
+	Add +=, -=, *= and /=
+	Add pre ++ and --
+	Add hexadecimal, octal and binary number literals
+	Add ! operator
+	Add ~ operator
+	Add &, |, ^, &=, |= and ^=
+	Add && and ||
+	Add a notion of an incomplete array type
+	Decay an array to a pointer in the func param context
+	Add a notion of an incomplete struct type
+	Add goto and labeled statement
+	Resolve conflict between labels and typedefs
+	Add break statement
+	Add continue statement
+	Add switch-case
+	Add <<, >>, <<= and >>=
+	Add ?: operator
+	Add constant expression
+	Support local variable initializers
+	Initialize excess array elements with zero
+	Skip excess initializer elements
+	Add string literal initializer
+	Allow to omit array length if an initializer is given
+	Handle struct initializers for local variables
+	Allow to initialize a struct with another struct
+	Handle union initializers for local variables
+	Add global initializer for scalar and string
+	Add struct initializer for global variable
+	Handle union initializers for global variable
+	Allow parentheses in initializers to be omitted
+	Allow extraneous braces for scalar initializer
+	Allow extraneous comma at the end of enum or initializer list
+	Emit uninitialize global data to .bss instead of .data
+	Add flexible array member
+	Allow to initialize struct flexible array member
+	Accept void as a parameter list
+	Align global variables
+	Add extern
+	Handle extern declarations in a block
+	Add _Alignof and _Alignas
+	[GNU] Allow a variable as an operand of _Alignof
+	Add static local variables
+	Add compound literals
+	Add return that doesn't take any value
+	Add static global variables
+	Add do ... while
+	Align stack frame to 16 byte boundaries
+	Handle a function returning bool, char or short
+	Allow to call a variadic function
+	Add va_start to support variadic functions
+	Check the number of function arguments
+	Add signed keyword
+	Add unsigned integral types
+	Add U, L and LL suffixes
+	Use long of ulong instead of int for some expressions
+	When comparing two pointers, treat them as unsigned
+	Handle unsigned types in the constant expression
+	Ignore const, volatile, auto, register, restrict or _Noreturn
+	Ignore "static" and "const" in array-dimensions
+	Allow to omit parameter name in function declaration
+	Add floating-point constant
+	Add "float" and "double" local variables and casts
+	Add flonum ==, !=, < and <=
+	Add flonum +, -, * and /
+	Handle flonum for if, while, do, !, ?:, || and &&
+	Allow to call a function that takes/returns flonums
+	Allow to define a function that takes/returns flonums
+	Implement default argument promotion for float
+	Support variadic function with floating-point parameters
+	Add flonum constant expression
+	Add "long double" as an alias for "double"
+	Add stage2 build
+	Add function pointer
+	Decay a function to a pointer in the func param context
+	Add usual arithmetic conversion for function pointer
+	Split cc1 from compiler driver
+	Run "as" command unless -S is given
+	Accept multiple input files
+	Run "ld" unless -c is given
+	Add a do-nothing preprocessor
+	Add the null directive
+	Add #include "..."
+	Skip extra tokens after #include "..."
+	Add -E option
+	Add #if and #endif
+	Skip nested #if in a skipped #if-clause
+	Add #else
+	Add #elif
+	Add objlike #define
+	Add #undef
+	Expand macros in the #if and #elif argument context
+	Do not expand a token more than once for the same objlike macro
+	Add #ifdef and #ifdef
+	Add zero-arity funclike #define
+	Add multi-arity funclike #define
+	Allow empty macro arguments
+	Allow parenthesized expressions as macro arguments
+	Do not expand a token more than once for the same funclike macro
+	Add macro stringizing operator (#)
+	Add macro token-pasting operator (##)
+	Use chibicc's preprocessor for all tests
+	Add defined() macro operator
+	Replace remaining identifiers with 0 in macro constexpr
+	Preserve newline and space during macro expansion
+	Support line continuation
+	Add #include <...>
+	Add -l<dir> option
+	Add default include paths
+	Add #error
+	Add predefine macros such as __STDC__
+	Add __FILE__ and __LINE__
+	Add __VA_ARGS__
+	Add __func__
+	[GNU] Add __FUNCTION__
+	Concatenate adjacent string literals
+	Recognize wide character literal
+	Add stdarg.h, stdbool.h, stddef.h, stdalign.h and float.h
+	Add va_arg()
+	Self-host: including preprocessor, chibicc can compile itself
+	Support passed-on-stack arguments
+	Allow struct parameter
+	Allow struct argument
+	Allow to cal a function returning a struct
+	Allow to define a function returing a struct
+	Allow variadic function to take more than 6 parameters
+	Add va_copy()
+	Dereferencing a function shouldn't do anything
+	Tokenize numeric tokens as pp-numbers
+	Add -D option
+	Add bitfield
+	Support global struct bitfield initializer
+	Handle op=-style assignments to bitfields
+	Handle zero-width bitfield member
+	Do not allow to obtain an address of a bitfield
+	Write to an in-memory buffer before writing to an actual output file
+	Ignore -O, -W and -g and other flags
+	Turn on -Wall compiler flag ans fix compiler warnings
+	Make an array of at least 16 bytes long to have alignment of at least
+	Make "main" to implicitly return 0
+	Add anonymous struct and union
+	Add __DATE__ and __TIME__ macros
+	[GNU] Add __COUNTER__ macro
+	Canonicalize newline character
+	Add \u and \U escape sequences
+	Accept multibyte character as wide character literal
+	Add UTF-16 character literal
+	Add UTF-32 character literal
+	Add UTF-8 string literal
+	Add UTF-16 string literal
+	Add UTF-32 string literal
+	Add wide string literal
+	Add UTF-16 string literal initializer
+	Add UTF-32 string literal initializer
+	Define __STDC_UTF_{16,32}__ macros
+	Allow multibyte UTF-8 character in identifier
+	[GNU] Accept $ as an identifier character
+	Allow to concatenate regular string literals with L/u/U string literals
+	Skip UTF-8 BOM markers
+	Add array designated initializer
+	Allow array designators to initialize incomplete arrays
+	[GNU] Allow to omit "=" in designated initializers
+	Add struct designated initializer
+	Add union designated initializer
+	Handle struct designator for anonymous struct member
+	Improve error message for multibyte characters
+	Add #line
+	[GNU] Add line marker directive
+	[GNU] Add __TIMESTAMP__ macro
+	[GNU] Add __BASE_FILE__ macro
+	Add __VA_OPT__
+	[GNU] Handle ##__VA_ARG__
+	Ignore #pragma
+	[GNU] Support GCC-style variadic macro
+	Add typeof
+	[GNU] Add __builtin_types_compatible_p
+	Add _Generic
+	[GNU] Allow sizeof(<function type>)
+	[GNU] Add ?: operator with omitted operand
+	Add basic "asm" statement
+	Handle inline functions as static functions
+	Do not emit static inline functions if referenced by no one
+	Use __attribute__((format(print, ..))) to find programming errors
+	Add -idirafter option
+	Add offsetof
+	Add tentative definition
+	Add -fcommon and -fno-common flags
+	Add thread-local variable
+	Add -include option
+	Add -x option
+	Make -E to imply -xc
+	Add alloca()
+	Add sizeof() for VLA
+	Add pointer arithmetic for VLA
+	Support sizeof(typename) where typename is a VLA
+	Do not define __STDC_NO_VLA__
+	Add -l option
+	Add -s option
+	Emit size and type for symbols
+	Recognize .a and .so files
+	Add long double
+	[GNU] Support case ranges
+	[GNU] Support array range designator
+	[GNU] Support labels-as-values
+	[GNU] Treat labels-as-values as compile-time constant
+	Add string hashmap
+	Use hashmap for macro name lookup
+	Use hashmap for block-scope lookup
+	Use hashmap for keyword lookup
+	Add -M option
+	Add -MF option
+	Add -MP option
+	Add -MT option
+	Add -MD option
+	Add -MQ option
+	Add -MMD option
+	Add -fpic -fPIC options
+	Cache file search results
+	Add include guard optimization
+	[GNU] Add "#pragma once"
+	[GNU] Add #include_next
+	Add -static option
+	Add -shared option
+	Add -L option
+	Add -WL option
+	Add -Xlinker option
+	Add scripts to test third-party apps
+	Add atomic_compare_exchange
+	Add atomic_exchange
+	Add _Atomic and atomic ++, -- and op= operators
+	Complete stdatomic.h
+	Add test/thirdparty/cpython.sh
+	Redefinition
+	Add __attribute__((packed))
+	Add __attribute__((aligned(N))) for struct declaration
+	Update README
+	Make struct member access to work with = and ?:
+	Add assembler
+	Support dce
+	Support gnu asm
+	Support __int128
+	Support _Static_assert
+	Support __vector_size__
+	Support __builtin_add_overflow, etc.
+	Support GCC C11 __atomic_* primitives
+	Support __builtin_memcpy, strlen, strpbrk, etc.
+	Support __builtin_constant_p, __builtin_likely, etc.
+	Support __builtin_isunordered, __builtin_islessgreater, etc.
+	Support __builtin_ctz, __builtin_bswap, __builtin_popcount, etc.
+	Support __force_align_arg_pointer__, __no_caller_saved_registers__, etc.
+	Support __constructor__, __section__, __cold__, -ffunction-sections, etc
+	Support building -x assembler-with-cpp a.k.a. .S files
+	Support profiling w/ -mcount / -mfentry / -mnop-count
+	Improve error messages to trace macro expansions
+	Reduce #lines of generated assembly by a third
+	Reduce #bytes of generated binary by a third
+	Report divide errors in constexprs
+	User perfect hash table for keywords
+	Allow casted values to be lvalues
+	Permit remainder operator in constexprs
+	Permit parentheses around string-initializer
+	Fix 64-bit bug in generated code for struct bitfields
+	Fix struct_designator() so it won't crash on anonymous union members
+	Fix bug where last statement in statement expression couldn't have label
+	Print_tokens (chibicc -E) nor works in the case of adjacent string liter
+	Make enums unsigned (like gcc) so we don't suffer the msvc enum bitfield
+	Use tabs in generated output
+	Parse javadoc-style markdown comments
+	Don't fold backslash newline in comments
+	Generated code no longer assumes red zone
+	Emit .size directives for function definitions
+	Use fisttp long double conversions if built w/ -msse3
