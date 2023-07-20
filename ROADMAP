@@ -1,4 +1,3 @@
-	Compile an integer
 	Add + and - operators
 	Add a tokenizer to allow space characters between tokens
 	Improve error message

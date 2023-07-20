@@ -1,7 +1,7 @@
 /*
     module  : mcc.c
-    version : 1.1
-    date    : 07/19/23
+    version : 1.2
+    date    : 07/20/23
 */
 #include "mcc.h"
 #include "pars.h"
@@ -13,6 +13,8 @@
 */
 
 /* --------------------------- V A R I A B L E S --------------------------- */
+
+extern FILE *yyin;
 
 int code_idx;
 instruction code[MAXPRG];
@@ -30,10 +32,15 @@ void enterprog(operator op, int64_t adr1, int64_t adr2)
     code[code_idx].adr2 = adr2;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     int i;
 
+    if (argc == 2)
+        if ((yyin = freopen(argv[1], "r", stdin)) == 0) {
+            fprintf(stderr, "failed to open the file '%s'.\n", argv[1]);
+            return 0;
+        }
     if ((i = yyparse()) == 0) {
         for (i = 1; i <= code_idx; i++)
             printf("%8d%15s%12" PRId64 "%12" PRId64 "\n",

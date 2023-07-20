@@ -1,8 +1,8 @@
 %{
 /*
     module  : lexr.l
-    version : 1.1
-    date    : 07/19/23
+    version : 1.2
+    date    : 07/20/23
 */
 #include "mcc.h"
 #include "pars.h"
@@ -12,8 +12,10 @@ D			[0-9]
 
 %%
 
-{D}+			{ yylval = atoi(yytext); return(CONSTANT); }
-.			{ /* ignore bad characters */ }
+{D}+			{ yylval.num = strtoll(yytext, 0, 10);
+			  return(CONSTANT); }
+[ \t\v\n\f]		;
+.			return yytext[0];
 
 %%
 

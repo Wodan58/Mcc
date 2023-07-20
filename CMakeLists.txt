@@ -1,6 +1,6 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.3
+#   version : 1.4
 #   date    : 07/20/23
 #
 cmake_minimum_required(VERSION 3.0)
@@ -27,18 +27,18 @@ add_executable(mcd mcd.c name.c)
 add_executable(mci mci.c name.c)
 add_executable(mca mca.c)
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-  target_link_libraries(mcc gc-lib)
-  include_directories(bdwgc/include)
-  add_subdirectory(bdwgc)
+# target_link_libraries(mcc gc-lib)
+# include_directories(bdwgc/include)
+# add_subdirectory(bdwgc)
 else()
-  if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage") # debug, no optimization
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling coverage
-  endif()
-  target_link_libraries(mcc m gc)
+# if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage") # debug, no optimization
+#   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling coverage
+# endif()
+# target_link_libraries(mcc m gc)
   add_custom_target(input.bin ALL
 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		    COMMAND build/mcc <input.txt | build/mcd input.bin
+		    COMMAND build/mcc input.txt | build/mcd input.bin
 		    DEPENDS input.txt)
   add_custom_target(input.s ALL
 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
