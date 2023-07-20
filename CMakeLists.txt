@@ -1,6 +1,6 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.2
+#   version : 1.3
 #   date    : 07/20/23
 #
 cmake_minimum_required(VERSION 3.0)
@@ -26,22 +26,6 @@ add_executable(mcc mcc.c ${FLEX_MyScanner_OUTPUTS} ${BISON_MyParser_OUTPUTS}
 add_executable(mcd mcd.c name.c)
 add_executable(mci mci.c name.c)
 add_executable(mca mca.c)
-add_custom_target(input.bin ALL
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		  COMMAND build/mcc <input.txt | build/mcd input.bin
-		  DEPENDS input.txt)
-add_custom_target(input.s ALL
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		  COMMAND build/mca input.bin >input.s
-		  DEPENDS input.bin)
-add_custom_target(input.o ALL
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		  COMMAND as -oinput.o input.s
-		  DEPENDS input.s)
-add_custom_target(input ALL
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		  COMMAND gcc -oinput input.o
-		  DEPENDS input.o)
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   target_link_libraries(mcc gc-lib)
   include_directories(bdwgc/include)
@@ -52,4 +36,20 @@ else()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling coverage
   endif()
   target_link_libraries(mcc m gc)
+  add_custom_target(input.bin ALL
+		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		    COMMAND build/mcc <input.txt | build/mcd input.bin
+		    DEPENDS input.txt)
+  add_custom_target(input.s ALL
+		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		    COMMAND build/mca input.bin >input.s
+		    DEPENDS input.bin)
+  add_custom_target(input.o ALL
+		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		    COMMAND as -oinput.o input.s
+		    DEPENDS input.s)
+  add_custom_target(input ALL
+		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		    COMMAND gcc -oinput input.o
+		    DEPENDS input.o)
 endif()
