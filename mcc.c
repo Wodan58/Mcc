@@ -1,10 +1,9 @@
 /*
     module  : mcc.c
-    version : 1.2
-    date    : 07/20/23
+    version : 1.3
+    date    : 08/06/23
 */
 #include "mcc.h"
-#include "pars.h"
 
 /*
     The task is to read a number and store it in the accumulator.
@@ -41,9 +40,9 @@ int main(int argc, char *argv[])
             fprintf(stderr, "failed to open the file '%s'.\n", argv[1]);
             return 0;
         }
-    if ((i = yyparse()) == 0) {
+    yyparse();
+    if (!errorcount)
         for (i = 1; i <= code_idx; i++)
             printf("%8d%15s%12" PRId64 "%12" PRId64 "\n",
                     i, operator_NAMES[code[i].op], code[i].adr1, code[i].adr2);
-    }
 }

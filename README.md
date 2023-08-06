@@ -34,6 +34,7 @@ The aim is to learn. The final product is of secondary importance.
 INSTALL
 -------
 
+    mkdir build
     cd build
     cmake ..
     cmake --build .

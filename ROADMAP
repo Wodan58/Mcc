@@ -1,5 +1,3 @@
-	Add + and - operators
-	Add a tokenizer to allow space characters between tokens
 	Improve error message
 	Add *, / and ()
 	Add unary plus and minus

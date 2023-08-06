@@ -1,10 +1,9 @@
 /*
     module  : mcd.c
-    version : 1.1
-    date    : 07/19/23
+    version : 1.2
+    date    : 08/06/23
 */
 #include "mcc.h"
-#include "pars.h"
 
 /*
     The task is to read a text file and convert this to binary.

@@ -1,10 +1,12 @@
 %{
 /*
     module  : pars.y
-    version : 1.2
-    date    : 07/20/23
+    version : 1.3
+    date    : 08/06/23
 */
 #include "mcc.h"
+
+int errorcount;
 %}
 
 %token <num> CONSTANT
@@ -28,6 +30,7 @@
 
 primary_expression
 	: CONSTANT
+	| error { my_error("expected a number", &@1); }
 	;
 
 additive_expression
@@ -42,8 +45,31 @@ expression
 
 %%
 
+/*
+    my_error - error processing during parsing; location info as parameter.
+*/
+void my_error(const char *str, YYLTYPE *bloc)
+{
+    int leng;
+
+    if (!line[0]) /* only one error per line */
+	return;
+    fflush(stdout);
+    leng = bloc->last_column - 1;
+    fprintf(stderr, "%s\n%*s^\n%*s%s\n", line, leng, "", leng, "", str);
+    line[0] = 0; /* invalidate line */
+    errorcount++;
+}
+
+/*
+    yyerror - error processing during source file read; location info global.
+*/
 void yyerror(const char *str)
 {
-    fflush(stdout);
-    fprintf(stderr, "*** %s\n", str);
+    YYLTYPE bloc;
+
+    if (!strcmp(str, "syntax error"))
+	return;
+    bloc.last_column = yylloc.last_column;
+    my_error(str, &bloc);
 }
