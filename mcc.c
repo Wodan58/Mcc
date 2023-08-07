@@ -1,7 +1,7 @@
 /*
     module  : mcc.c
-    version : 1.3
-    date    : 08/06/23
+    version : 1.4
+    date    : 08/07/23
 */
 #include "mcc.h"
 
@@ -41,8 +41,12 @@ int main(int argc, char *argv[])
             return 0;
         }
     yyparse();
-    if (!errorcount)
+    if (errorcount)
+	fprintf(stderr, "%d error(s)\n", errorcount);
+    else {
+	fprintf(stderr, "%d line(s)\n", code_idx);
         for (i = 1; i <= code_idx; i++)
             printf("%8d%15s%12" PRId64 "%12" PRId64 "\n",
                     i, operator_NAMES[code[i].op], code[i].adr1, code[i].adr2);
+    }
 }

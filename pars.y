@@ -1,8 +1,8 @@
 %{
 /*
     module  : pars.y
-    version : 1.3
-    date    : 08/06/23
+    version : 1.4
+    date    : 08/07/23
 */
 #include "mcc.h"
 
@@ -12,6 +12,8 @@ int errorcount;
 %token <num> CONSTANT
 
 %type <num> primary_expression
+%type <num> unary_expression
+%type <num> multiplicative_expression
 %type <num> additive_expression
 %type <num> expression
 
@@ -23,20 +25,33 @@ int errorcount;
     int64_t num;
 };
 
-/* start the grammar with primary_expression */
+/* start the grammar with expression */
 %start expression
 
 %%
 
 primary_expression
 	: CONSTANT
+	| '(' additive_expression ')' { $$ = $2; }
 	| error { my_error("expected a number", &@1); }
 	;
 
-additive_expression
+unary_expression
 	: primary_expression
-	| additive_expression '+' primary_expression { $$ = $1 + $3; }
-	| additive_expression '-' primary_expression { $$ = $1 - $3; }
+	| '+' primary_expression { $$ = $2; }
+	| '-' primary_expression { $$ = -$2; }
+	;
+
+multiplicative_expression
+	: unary_expression
+	| multiplicative_expression '*' unary_expression { $$ = $1 * $3; }
+	| multiplicative_expression '/' unary_expression { $$ = $1 / $3; }
+	;
+
+additive_expression
+	: multiplicative_expression
+	| additive_expression '+' multiplicative_expression { $$ = $1 + $3; }
+	| additive_expression '-' multiplicative_expression { $$ = $1 - $3; }
 	;
 
 expression

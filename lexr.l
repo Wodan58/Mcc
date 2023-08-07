@@ -1,8 +1,8 @@
 %{
 /*
     module  : lexr.l
-    version : 1.3
-    date    : 08/06/23
+    version : 1.4
+    date    : 08/07/23
 */
 #include "mcc.h"
 
@@ -15,17 +15,17 @@ int copyline()
     while (yytext[i] == '\n')
 	i++;
     strncpy(line, &yytext[i], yyleng - i); /* copy input line */
-    j = yyleng - i - 1;
-    if (j >= 0)
-	line[j] = 0; /* replace \n by \0 */
+    if ((j = yyleng - i - 1) < 0)
+	j = 0;
+    line[j] = 0; /* replace \n by \0 */
     yylloc.first_column = yylloc.last_column = 0; /* reset columns */
     return i;
 }
 
 /* Update the column positions, each time some text is matched. */
-#define YY_USER_ACTION	do { yylloc.first_column = yylloc.last_column; \
-			     yylloc.last_column += yyleng; } while (0);
-#define YY_USER_INIT	ungetc('\n', stdin);
+#define YY_USER_ACTION	{ yylloc.first_column = yylloc.last_column; \
+			  yylloc.last_column += yyleng; }
+#define YY_USER_INIT	ungetc('\n', stdin)
 %}
 
 %option yylineno
