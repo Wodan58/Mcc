@@ -1,7 +1,7 @@
 /*
     module  : mcc.c
-    version : 1.4
-    date    : 08/07/23
+    version : 1.5
+    date    : 08/08/23
 */
 #include "mcc.h"
 
@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
 {
     int i;
 
+    fprintf(stderr, "MCC  -  compiled at %s on %s", __TIME__, __DATE__);
+    fprintf(stderr, " (%s)\n", VERSION);
     if (argc == 2)
         if ((yyin = freopen(argv[1], "r", stdin)) == 0) {
             fprintf(stderr, "failed to open the file '%s'.\n", argv[1]);
