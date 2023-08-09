@@ -1,8 +1,8 @@
 %{
 /*
     module  : pars.y
-    version : 1.5
-    date    : 08/08/23
+    version : 1.6
+    date    : 08/09/23
 */
 #include "mcc.h"
 
@@ -22,6 +22,8 @@ int errorcount;
 %type <num> relational_expression
 %type <num> equality_expression
 %type <num> expression
+%type <num> statement
+%type <num> statement_list
 
 /* generate include file with symbols and types */
 %defines
@@ -31,8 +33,8 @@ int errorcount;
     int64_t num;
 };
 
-/* start the grammar with expression */
-%start expression
+/* start the grammar with statement_list */
+%start statement_list
 
 %%
 
@@ -76,6 +78,16 @@ equality_expression
 
 expression
 	: equality_expression { enterprog(loadimmed, 0, $1); }
+	;
+
+statement
+	: ';' { $$ = 0; }
+	| expression ';'
+	;
+
+statement_list
+	: statement
+	| statement_list statement
 	;
 
 %%

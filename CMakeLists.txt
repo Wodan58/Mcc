@@ -1,10 +1,10 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.5
-#   date    : 07/20/23
+#   version : 1.6
+#   date    : 08/09/23
 #
 cmake_minimum_required(VERSION 3.0)
-project(Mcc VERSION 1.0)
+project(MCC VERSION 1.6)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -30,15 +30,15 @@ add_dependencies(mci mcc)
 add_executable(mca mca.c)
 add_dependencies(mca mcc)
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-# target_link_libraries(mcc gc-lib)
-# include_directories(bdwgc/include)
-# add_subdirectory(bdwgc)
+  target_link_libraries(mcc gc-lib)
+  include_directories(bdwgc/include)
+  add_subdirectory(bdwgc)
 else()
-# if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage") # debug, no optimization
-#   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling coverage
-# endif()
-# target_link_libraries(mcc m gc)
+  if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage") # debug, no optimization
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling coverage
+  endif()
+  target_link_libraries(mcc m gc)
   add_custom_target(input.bin ALL
 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		    COMMAND build/mcc input.txt | build/mcd input.bin
