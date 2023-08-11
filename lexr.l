@@ -1,12 +1,12 @@
 %{
 /*
     module  : lexr.l
-    version : 1.5
-    date    : 08/08/23
+    version : 1.6
+    date    : 08/11/23
 */
 #include "mcc.h"
 
-char line[MAXLIN + 1];	/* input line */
+char line[MAXLIN + 1]; /* input line */
 
 int copyline()
 {
@@ -31,22 +31,24 @@ int copyline()
 %option yylineno
 
 D			[0-9]
+L			[a-zA-Z_]
+A			[a-zA-Z_0-9]
 
 %%
 
 [\n]+.*\n		{ int i = copyline(); yyless(i); }
-{D}+			{ yylval.num = strtoll(yytext, 0, 10);
-			  return CONSTANT; }
+{D}+			{ yylval.num = strtoll(yytext, 0, 0); return CONSTANT; }
+{L}{A}*			{ yylval.str = GC_strdup(yytext); return IDENTIFIER; }
 "<="			{ return LE_OP; }
 ">="			{ return GE_OP; }
 "=="			{ return EQ_OP; }
 "!="			{ return NE_OP; }
-[ \t\v\n\f]		;
+[ \b\t\n\v\f\r]		;
 .			return yytext[0];
 
 %%
 
-int yywrap(void)        /* called at end of input */
+int yywrap(void)	/* called at end of input */
 {
-    return 1;           /* terminate now */
+    return 1;		/* terminate now */
 }

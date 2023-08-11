@@ -1,7 +1,7 @@
 /*
     module  : mcc.h
-    version : 1.2
-    date    : 08/06/23
+    version : 1.3
+    date    : 08/11/23
 */
 #include <stdio.h>
 #include <string.h>
@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <gc.h>
 #include "pars.h"
 
 /* ----------------------------- D E F I N E S ----------------------------- */
@@ -23,11 +24,25 @@
 */
 #define MAXPRG	200
 
+/* ------------------------------- T Y P E S ------------------------------- */
+
 typedef enum operator {
-    loadimmed
+    add,
+    sub,
+    mul,
+    dvd,
+    eql,
+    neq,
+    gtr,
+    geq,
+    lss,
+    leq,
+    neg,
+    loadlocal,
+    loadimmed,
+    storlocal
 } operator;
 
-/* ------------------------------- T Y P E S ------------------------------- */
 
 typedef struct instruction {
     operator op;
@@ -47,3 +62,5 @@ int yylex(void);
 void my_error(const char *str, YYLTYPE *bloc);
 void yyerror(const char *str); /* prints grammar violation message */
 void enterprog(operator op, int64_t adr1, int64_t adr2);
+void enterlocal(int type);
+int lookup(char *str, int *found, int *type);

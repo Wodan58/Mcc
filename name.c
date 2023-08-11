@@ -1,6 +1,21 @@
 /*
     module  : name.c
-    version : 1.1
-    date    : 07/19/23
+    version : 1.2
+    date    : 08/11/23
 */
-char *operator_NAMES[] = { "LOADIMMED" };
+char *operator_NAMES[] = {
+    "ADD",
+    "SUB",
+    "MUL",
+    "DVD",
+    "EQL",
+    "NEQ",
+    "GTR",
+    "GEQ",
+    "LSS",
+    "LEQ",
+    "NEG",
+    "LOADLOCAL",
+    "LOADIMMED",
+    "STORLOCAL"
+};

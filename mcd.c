@@ -1,7 +1,7 @@
 /*
     module  : mcd.c
-    version : 1.2
-    date    : 08/06/23
+    version : 1.3
+    date    : 08/11/23
 */
 #include "mcc.h"
 
@@ -12,7 +12,7 @@
 /* ----------------------------- D E F I N E S ----------------------------- */
 
 #define MAXSTR	80
-#define INSCNT	25
+#define INSCNT	14
 
 /* --------------------------- F U N C T I O N S --------------------------- */
 
@@ -24,23 +24,25 @@ int main(int argc, char *argv[])
     instruction ins;
     char str[MAXSTR], *output = "mcc.out";
 
+    fprintf(stderr, "MCD  -  compiled at %s on %s", __TIME__, __DATE__);
+    fprintf(stderr, " (%s)\n", VERSION);
     if (argc == 2)
-        output = argv[1];
+	output = argv[1];
     if ((fp = fopen(output, "wb")) == 0) {
-        fprintf(stderr, "%s cannot create\n", output);
-        return 1;
+	fprintf(stderr, "%s cannot create\n", output);
+	return 1;
     }
     while (scanf("%" SCNd64 "%s %" SCNd64 "%" SCNd64,
-                 &l, str, &ins.adr1, &ins.adr2) == 4) {
-        for (i = 0; i < INSCNT; i++)
-            if (!strcmp(str, operator_NAMES[i]))
-                break;
-        if (i == INSCNT)
-            fprintf(stderr, "%s not found\n", str);
-        else {
-            ins.op = i;
-            fwrite(&ins, sizeof(ins), 1, fp);
-        }
+		 &l, str, &ins.adr1, &ins.adr2) == 4) {
+	for (i = 0; i < INSCNT; i++)
+	    if (!strcmp(str, operator_NAMES[i]))
+		break;
+	if (i == INSCNT)
+	    fprintf(stderr, "%s not found\n", str);
+	else {
+	    ins.op = i;
+	    fwrite(&ins, sizeof(ins), 1, fp);
+	}
     }
     fclose(fp);
     return 0;

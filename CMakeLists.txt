@@ -1,10 +1,11 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.6
-#   date    : 08/09/23
+#   version : 1.7
+#   date    : 08/11/23
 #
 cmake_minimum_required(VERSION 3.0)
-project(MCC VERSION 1.6)
+# replace 1.0 by 1.7 before posting
+project(MCC VERSION 1.7)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -39,19 +40,19 @@ else()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling coverage
   endif()
   target_link_libraries(mcc m gc)
-  add_custom_target(input.bin ALL
+add_custom_target(input.bin ALL
 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		    COMMAND build/mcc input.txt | build/mcd input.bin
 		    DEPENDS input.txt)
-  add_custom_target(input.s ALL
+add_custom_target(input.s ALL
 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		    COMMAND build/mca input.bin >input.s
 		    DEPENDS input.bin)
-  add_custom_target(input.o ALL
+add_custom_target(input.o ALL
 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		    COMMAND as -oinput.o input.s
 		    DEPENDS input.s)
-  add_custom_target(input ALL
+add_custom_target(input ALL
 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		    COMMAND gcc -oinput input.o
 		    DEPENDS input.o)

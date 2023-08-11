@@ -1,4 +1,6 @@
 
+1.7
+	Support single-letter local variables
 1.6
 	Accept multiple statements separated by semicolons
 1.5
