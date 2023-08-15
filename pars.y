@@ -1,8 +1,8 @@
 %{
 /*
     module  : pars.y
-    version : 1.7
-    date    : 08/11/23
+    version : 1.8
+    date    : 08/15/23
 */
 #include "mcc.h"
 
@@ -15,6 +15,7 @@ int errorcount, regnum, found, type;
 %token GE_OP
 %token EQ_OP
 %token NE_OP
+%token RETURN
 
 %type <num> primary_expression unary_expression
 
@@ -175,9 +176,19 @@ expression
 	| expression ',' assignment_expression
 	;
 
-statement
+expression_statement
 	: ';'
 	| expression ';'
+	;
+
+jump_statement
+	: RETURN ';'
+	| RETURN expression ';'
+	;
+
+statement
+	: expression_statement
+	| jump_statement
 	;
 
 statement_list

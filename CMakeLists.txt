@@ -1,11 +1,11 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.7
-#   date    : 08/11/23
+#   version : 1.8
+#   date    : 08/15/23
 #
 cmake_minimum_required(VERSION 3.0)
-# replace 1.0 by 1.7 before posting
-project(MCC VERSION 1.7)
+# replace 1.0 by 1.8 before posting
+project(MCC VERSION 1.8)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()

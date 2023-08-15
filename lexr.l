@@ -1,8 +1,8 @@
 %{
 /*
     module  : lexr.l
-    version : 1.6
-    date    : 08/11/23
+    version : 1.7
+    date    : 08/15/23
 */
 #include "mcc.h"
 
@@ -37,12 +37,13 @@ A			[a-zA-Z_0-9]
 %%
 
 [\n]+.*\n		{ int i = copyline(); yyless(i); }
-{D}+			{ yylval.num = strtoll(yytext, 0, 0); return CONSTANT; }
-{L}{A}*			{ yylval.str = GC_strdup(yytext); return IDENTIFIER; }
 "<="			{ return LE_OP; }
 ">="			{ return GE_OP; }
 "=="			{ return EQ_OP; }
 "!="			{ return NE_OP; }
+"return"		{ return RETURN; }
+{D}+			{ yylval.num = strtoll(yytext, 0, 0); return CONSTANT; }
+{L}{A}*			{ yylval.str = GC_strdup(yytext); return IDENTIFIER; }
 [ \b\t\n\v\f\r]		;
 .			return yytext[0];
 
