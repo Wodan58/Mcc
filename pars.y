@@ -1,8 +1,8 @@
 %{
 /*
     module  : pars.y
-    version : 1.8
-    date    : 08/15/23
+    version : 1.9
+    date    : 08/16/23
 */
 #include "mcc.h"
 
@@ -176,6 +176,20 @@ expression
 	| expression ',' assignment_expression
 	;
 
+compound_statement
+	: '{' '}'
+	| '{'  block_item_list '}'
+	;
+
+block_item_list
+	: block_item
+	| block_item_list block_item
+	;
+
+block_item
+	: statement
+	;
+
 expression_statement
 	: ';'
 	| expression ';'
@@ -187,7 +201,8 @@ jump_statement
 	;
 
 statement
-	: expression_statement
+	: compound_statement
+	| expression_statement
 	| jump_statement
 	;
 
