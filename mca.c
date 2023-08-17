@@ -1,7 +1,7 @@
 /*
     module  : mca.c
-    version : 1.3
-    date    : 08/11/23
+    version : 1.4
+    date    : 08/17/23
 */
 #include "mcc.h"
 
@@ -89,6 +89,10 @@ int main(int argc, char *argv[])
 		   register_NAMES[TEMPORARY]);
 	    printf("\tmov %%%s, (%%%s)\n", register_NAMES[pc->adr1],
 		   register_NAMES[TEMPORARY]);
+	    break;
+
+	case jmp:
+	case jiz:
 	    break;
 
 	default:

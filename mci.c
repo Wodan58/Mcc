@@ -1,7 +1,7 @@
 /*
     module  : mci.c
-    version : 1.3
-    date    : 08/11/23
+    version : 1.4
+    date    : 08/17/23
 */
 #include "mcc.h"
 
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 	    baseregister = stack[stacktop + 1];
 	    pc = &code[stack[stacktop + 2]];
 	    break;
-
+#endif
 	case jmp:
 	    pc = &code[pc->adr1];
 	    break;
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 	    else
 		pc++;
 	    break;
-
+#if 0
 	case hlt:
 	    exit(EXIT_SUCCESS);
 #endif

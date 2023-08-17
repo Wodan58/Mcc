@@ -1,8 +1,8 @@
 %{
 /*
     module  : pars.y
-    version : 1.9
-    date    : 08/16/23
+    version : 1.10
+    date    : 08/17/23
 */
 #include "mcc.h"
 
@@ -15,9 +15,11 @@ int errorcount, regnum, found, type;
 %token GE_OP
 %token EQ_OP
 %token NE_OP
+%token IF
+%token ELSE
 %token RETURN
 
-%type <num> primary_expression unary_expression
+%type <num> primary_expression unary_expression jiz_block jmp_block
 
 /* generate include file with symbols and types */
 %defines
@@ -200,9 +202,28 @@ jump_statement
 	| RETURN expression ';'
 	;
 
+jiz_block
+	: { enterprog(jiz, 0, regnum); /* jump to else or end */
+	    $$ = code_idx; /* to be fixed */ }
+	;
+
+jmp_block
+	: { enterprog(jmp, 0, regnum); /* jump to end */
+	    $$ = code_idx; /* to be fixed */ }
+	;
+
+selection_statement
+	: IF '(' expression ')' jiz_block statement jmp_block
+	  { code[$5].adr1 = code_idx + 1; /* fixing jiz_block */ }
+	  ELSE statement { code[$7].adr1 = code_idx + 1; /* fix jmp_block */ }
+	| IF '(' expression ')' jiz_block statement
+	  { code[$5].adr1 = code_idx + 1; /* fixing jiz_block */ }
+	;
+
 statement
 	: compound_statement
 	| expression_statement
+	| selection_statement
 	| jump_statement
 	;
 

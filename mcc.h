@@ -1,7 +1,7 @@
 /*
     module  : mcc.h
-    version : 1.3
-    date    : 08/11/23
+    version : 1.4
+    date    : 08/17/23
 */
 #include <stdio.h>
 #include <string.h>
@@ -40,7 +40,9 @@ typedef enum operator {
     neg,
     loadlocal,
     loadimmed,
-    storlocal
+    storlocal,
+    jmp,
+    jiz
 } operator;
 
 
