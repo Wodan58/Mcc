@@ -1,12 +1,13 @@
 %{
 /*
     module  : pars.y
-    version : 1.10
-    date    : 08/17/23
+    version : 1.11
+    date    : 08/18/23
 */
 #include "mcc.h"
 
-int errorcount, regnum, found, type;
+struct opcode temp;
+int errorcount, regno;
 %}
 
 %token <str> IDENTIFIER
@@ -17,17 +18,29 @@ int errorcount, regnum, found, type;
 %token NE_OP
 %token IF
 %token ELSE
+%token ENDIF
+%token FOR
 %token RETURN
 
-%type <num> primary_expression unary_expression jiz_block jmp_block
+%type <op> primary_expression unary_expression multiplicative_expression
+%type <op> additive_expression relational_expression equality_expression
+%type <op> assignment_expression expression compound_statement block_item_list
+%type <op> block_item expression_statement jump_statement selection_statement
+%type <op> iteration_statement statement statement_list
+
+%type <num> jiz_block jmp_block jmp_target
 
 /* generate include file with symbols and types */
 %defines
 
 /* advanced semantic type */
 %union {
-    char *str;
+    char *str;		/* return values from lexer */
     int64_t num;
+    struct opcode {	/* evaluation values parser */
+	int regno;
+	int index;
+    } op;
 };
 
 /* start the grammar with statement_list */
@@ -37,11 +50,13 @@ int errorcount, regnum, found, type;
 
 primary_expression
 	: IDENTIFIER
-	  { int index = lookup(yylval.str, &found, &type); /* get address */
+	  { int index, found, type;
+	    index = lookup(yylval.str, &found, &type); /* get address */
 	    if (found == -1) {
 		enterlocal(type);
 		index = lookup(yylval.str, &found, &type); /* get address */
 	    }
+	    enterprog(loadlocal, regno, index); /* load address in regnum */
 #if 0
 		my_error("variable not found", &@1); /* undeclared variable */
 	    else if (found == 1)
@@ -49,10 +64,13 @@ primary_expression
 	    else if (found == 0)
 		enterprog(loadglobl, regnum, index);
 #endif
-	    $$ = index; }
-	| CONSTANT { enterprog(loadimmed, regnum, yylval.num); $$ = 0; }
-	| '(' additive_expression ')' { $$ = 0; }
-	| error { my_error("expected a number", &@1); }
+	  temp.regno = regno++; /* variables are loaded in register regnum */
+	  temp.index = index; $$ = temp; }
+	| CONSTANT { enterprog(loadimmed, 10, yylval.num);
+	  temp.regno = 10; /* constants are loaded in register 10 */
+	  temp.index = 0; $$ = temp; }
+	| '(' additive_expression ')' { $$ = $2; }
+	| error { my_error("expected a number", &@1); $$.regno = -1; }
 	;
 
 unary_expression
@@ -62,125 +80,115 @@ unary_expression
 	  { if (code[code_idx].op == loadimmed)
 		code[code_idx].adr2 = -code[code_idx].adr2;
 	    else
-		enterprog(neg, regnum, 0); $$ = $2; }
+		enterprog(neg, $2.regno, 0); $$ = $2; }
 	;
 
 multiplicative_expression
 	: unary_expression
-	| multiplicative_expression '*' { regnum++; } unary_expression
+	| multiplicative_expression '*' unary_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 *= code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(mul, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
-	| multiplicative_expression '/' { regnum++; } unary_expression
+		enterprog(mul, $1.regno, $3.regno); }
+	| multiplicative_expression '/' unary_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 /= code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(dvd, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
+		enterprog(dvd, $1.regno, $3.regno); }
 	;
 
 additive_expression
 	: multiplicative_expression
-	| additive_expression '+' { regnum++; } multiplicative_expression
+	| additive_expression '+' multiplicative_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 += code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(add, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
-	| additive_expression '-' { regnum++; } multiplicative_expression
+		enterprog(add, $1.regno, $3.regno); }
+	| additive_expression '-' multiplicative_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 -= code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(sub, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
+		enterprog(sub, $1.regno, $3.regno); }
 	;
 
 relational_expression
 	: additive_expression
-	| relational_expression '<' { regnum++; } additive_expression
+	| relational_expression '<' additive_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 <
 					  code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(lss, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
-	| relational_expression '>' { regnum++; } additive_expression
+		enterprog(lss, $1.regno, $3.regno); }
+	| relational_expression '>' additive_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 >
 					  code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(gtr, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
-	| relational_expression LE_OP { regnum++; } additive_expression
+		enterprog(gtr, $1.regno, $3.regno); }
+	| relational_expression LE_OP additive_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 <=
 					  code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(leq, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
-	| relational_expression GE_OP { regnum++; } additive_expression
+		enterprog(leq, $1.regno, $3.regno); }
+	| relational_expression GE_OP additive_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 >=
 					  code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(geq, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
+		enterprog(geq, $1.regno, $3.regno); }
 	;
 
 equality_expression
 	: relational_expression
-	| equality_expression EQ_OP { regnum++; } relational_expression
+	| equality_expression EQ_OP relational_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 ==
 					  code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(eql, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
-	| equality_expression NE_OP { regnum++; } relational_expression
+		enterprog(eql, $1.regno, $3.regno); }
+	| equality_expression NE_OP relational_expression
 	  { if (code[code_idx].op == loadimmed &&
 		code[code_idx - 1].op == loadimmed) {
 		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 !=
 					  code[code_idx].adr2;
 		code_idx--;
 	    } else
-		enterprog(neq, regnum - 1, regnum);
-	    regnum--; } /* discard register from second factor */
+		enterprog(neq, $1.regno, $3.regno); }
 	;
 
 assignment_expression
 	: equality_expression
 	| unary_expression '=' assignment_expression
-	  { enterprog(storlocal, $1, regnum); }
+	  { enterprog(storlocal, $1.index, $3.regno); $$ = $3; }
 	;
 
 expression
 	: assignment_expression
-	| expression ',' assignment_expression
+	| expression ',' assignment_expression { $$ = $3; }
 	;
 
 compound_statement
-	: '{' '}'
-	| '{'  block_item_list '}'
+	: '{' '}' { $$.regno = 0; }
+	| '{'  block_item_list '}' { $$ = $2; }
 	;
 
 block_item_list
@@ -189,41 +197,54 @@ block_item_list
 	;
 
 block_item
-	: statement
+	: statement { $$.regno = 0; }
 	;
 
 expression_statement
-	: ';'
-	| expression ';'
+	: ';' { $$.regno = regno = 0; }
+	| expression ';' { regno = 0; }
 	;
 
 jump_statement
-	: RETURN ';'
-	| RETURN expression ';'
+	: RETURN ';' { $$.regno = regno = 0; }
+	| RETURN expression ';' { regno = 0; $$ = $2; }
 	;
 
 jiz_block
-	: { enterprog(jiz, 0, regnum); /* jump to else or end */
-	    $$ = code_idx; /* to be fixed */ }
+	: { enterprog(jiz, -1, code[code_idx].adr1); $$ = code_idx; }
 	;
 
 jmp_block
-	: { enterprog(jmp, 0, regnum); /* jump to end */
-	    $$ = code_idx; /* to be fixed */ }
+	: { enterprog(jmp, -1, 0); $$ = code_idx; }
 	;
 
 selection_statement
 	: IF '(' expression ')' jiz_block statement jmp_block
-	  { code[$5].adr1 = code_idx + 1; /* fixing jiz_block */ }
-	  ELSE statement { code[$7].adr1 = code_idx + 1; /* fix jmp_block */ }
+	  { code[$5].adr1 = code_idx + 1; } ELSE statement
+	  { code[$7].adr1 = code_idx + 1; } ENDIF { $$.regno = -1; }
 	| IF '(' expression ')' jiz_block statement
-	  { code[$5].adr1 = code_idx + 1; /* fixing jiz_block */ }
+	  { code[$5].adr1 = code_idx + 1; } ENDIF { $$.regno = -1; }
+	;
+
+jmp_target
+	: { $$ = code_idx + 1; }
+	;
+
+iteration_statement
+	: FOR '(' expression_statement jmp_target expression_statement
+	  jiz_block ')' statement { enterprog(jmp, $4, 0);
+	  code[$6].adr1 = code_idx + 1; }
+	| FOR '(' expression_statement jmp_target expression_statement
+	  jiz_block jmp_block expression { enterprog(jmp, $4, 0);
+	  code[$7].adr1 = code_idx + 1; } ')' statement
+	  { enterprog(jmp, $7 + 1, 0); code[$6].adr1 = code_idx + 1; }
 	;
 
 statement
 	: compound_statement
 	| expression_statement
 	| selection_statement
+	| iteration_statement
 	| jump_statement
 	;
 

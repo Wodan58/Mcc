@@ -1,7 +1,7 @@
 /*
     module  : mci.c
-    version : 1.4
-    date    : 08/17/23
+    version : 1.5
+    date    : 08/18/23
 */
 #include "mcc.h"
 
@@ -15,7 +15,7 @@
 #define tracing		true
 
 #define maxstack	1000
-#define topregister	7
+#define topregister	10
 
 /* --------------------------- F U N C T I O N S --------------------------- */
 
@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
     instruction code[MAXPRG], *pc, *pe;
     int64_t stack[maxstack + 1], stacktop = 0;
     int64_t reg[topregister + 1], baseregister = 0;
+    int64_t i;
 
     fprintf(stderr, "MCI  -  compiled at %s on %s", __TIME__, __DATE__);
     fprintf(stderr, " (%s)\n", VERSION);
@@ -196,6 +197,14 @@ int main(int argc, char *argv[])
 #else
 	    __builtin_unreachable();
 #endif
+	}
+	if (tracing) {
+	    printf("i=%" PRId64 " ", stack[0]);
+	    printf("\nj=%" PRId64 " ", stack[1]);
+	    printf("\nregs: ");
+	    for (i = 0; i <= topregister; i++)
+		printf("%" PRId64 " ", reg[i]);
+	    printf("\n");
 	}
     }
     exit(EXIT_SUCCESS);

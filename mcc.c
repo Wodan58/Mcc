@@ -1,7 +1,7 @@
 /*
     module  : mcc.c
-    version : 1.6
-    date    : 08/11/23
+    version : 1.7
+    date    : 08/18/23
 */
 #include "mcc.h"
 
@@ -89,7 +89,7 @@ int lookup(char *str, int *found, int *type)
 	    *type = functions[i].type;
 	    return i;
 	}
-    *found = -1;
+    *found = *type = -1;
     return -1;
 }
 

@@ -1,11 +1,11 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.10
-#   date    : 08/17/23
+#   version : 1.11
+#   date    : 08/18/23
 #
 cmake_minimum_required(VERSION 3.0)
 # replace 1.0 by I within percents before posting
-project(MCC VERSION 1.10)
+project(MCC VERSION 1.11)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -28,8 +28,8 @@ add_executable(mcd mcd.c name.c)
 add_dependencies(mcd mcc)
 add_executable(mci mci.c name.c)
 add_dependencies(mci mcc)
-add_executable(mca mca.c)
-add_dependencies(mca mcc)
+# add_executable(mca mca.c)
+# add_dependencies(mca mcc)
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   target_link_libraries(mcc gc-lib)
   include_directories(bdwgc/include)
@@ -44,16 +44,16 @@ add_custom_target(input.bin ALL
 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		    COMMAND build/mcc input.txt | build/mcd input.bin
 		    DEPENDS input.txt)
-add_custom_target(input.s ALL
-		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		    COMMAND build/mca input.bin >input.s
-		    DEPENDS input.bin)
-add_custom_target(input.o ALL
-		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		    COMMAND as -oinput.o input.s
-		    DEPENDS input.s)
-add_custom_target(input ALL
-		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		    COMMAND gcc -oinput input.o
-		    DEPENDS input.o)
+# add_custom_target(input.s ALL
+# 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+# 		    COMMAND build/mca input.bin >input.s
+# 		    DEPENDS input.bin)
+# add_custom_target(input.o ALL
+# 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+# 		    COMMAND as -oinput.o input.s
+# 		    DEPENDS input.s)
+# add_custom_target(input ALL
+# 		    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+# 		    COMMAND gcc -oinput input.o
+# 		    DEPENDS input.o)
 endif()
