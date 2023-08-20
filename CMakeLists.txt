@@ -1,11 +1,11 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.11
-#   date    : 08/18/23
+#   version : 1.12
+#   date    : 08/20/23
 #
 cmake_minimum_required(VERSION 3.0)
 # replace 1.0 by I within percents before posting
-project(MCC VERSION 1.11)
+project(MCC VERSION 1.12)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()

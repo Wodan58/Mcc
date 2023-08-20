@@ -1,8 +1,8 @@
 %{
 /*
     module  : pars.y
-    version : 1.11
-    date    : 08/18/23
+    version : 1.12
+    date    : 08/20/23
 */
 #include "mcc.h"
 
@@ -20,6 +20,7 @@ int errorcount, regno;
 %token ELSE
 %token ENDIF
 %token FOR
+%token WHILE
 %token RETURN
 
 %type <op> primary_expression unary_expression multiplicative_expression
@@ -56,15 +57,15 @@ primary_expression
 		enterlocal(type);
 		index = lookup(yylval.str, &found, &type); /* get address */
 	    }
-	    enterprog(loadlocal, regno, index); /* load address in regnum */
+	    enterprog(loadlocal, regno, index); /* load address in regno */
 #if 0
 		my_error("variable not found", &@1); /* undeclared variable */
 	    else if (found == 1)
-		enterprog(loadlocal, regnum, index); /* load address in reg */
+		enterprog(loadlocal, regno, index); /* load address in regno */
 	    else if (found == 0)
-		enterprog(loadglobl, regnum, index);
+		enterprog(loadglobl, regno, index);
 #endif
-	  temp.regno = regno++; /* variables are loaded in register regnum */
+	  temp.regno = regno++; /* variables are loaded in register regno */
 	  temp.index = index; $$ = temp; }
 	| CONSTANT { enterprog(loadimmed, 10, yylval.num);
 	  temp.regno = 10; /* constants are loaded in register 10 */
@@ -231,7 +232,9 @@ jmp_target
 	;
 
 iteration_statement
-	: FOR '(' expression_statement jmp_target expression_statement
+	: WHILE '(' jmp_target expression jiz_block ')' statement
+	  { enterprog(jmp, $3, 0); code[$5].adr1 = code_idx + 1; }
+	| FOR '(' expression_statement jmp_target expression_statement
 	  jiz_block ')' statement { enterprog(jmp, $4, 0);
 	  code[$6].adr1 = code_idx + 1; }
 	| FOR '(' expression_statement jmp_target expression_statement
