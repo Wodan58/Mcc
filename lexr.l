@@ -1,8 +1,8 @@
 %{
 /*
     module  : lexr.l
-    version : 1.10
-    date    : 08/20/23
+    version : 1.11
+    date    : 08/27/23
 */
 #include "mcc.h"
 
@@ -46,6 +46,7 @@ A			[a-zA-Z_0-9]
 "endif"			{ return ENDIF; }
 "for"			{ return FOR; }
 "while"			{ return WHILE; }
+"int"			{ return INT; }
 "return"		{ return RETURN; }
 {D}+			{ yylval.num = strtoll(yytext, 0, 0); return CONSTANT; }
 {L}{A}*			{ yylval.str = GC_strdup(yytext); return IDENTIFIER; }

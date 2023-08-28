@@ -1,8 +1,8 @@
 %{
 /*
     module  : pars.y
-    version : 1.12
-    date    : 08/20/23
+    version : 1.13
+    date    : 08/27/23
 */
 #include "mcc.h"
 
@@ -21,13 +21,17 @@ int errorcount, regno;
 %token ENDIF
 %token FOR
 %token WHILE
+%token INT
 %token RETURN
 
 %type <op> primary_expression unary_expression multiplicative_expression
 %type <op> additive_expression relational_expression equality_expression
 %type <op> assignment_expression expression compound_statement block_item_list
 %type <op> block_item expression_statement jump_statement selection_statement
-%type <op> iteration_statement statement statement_list
+%type <op> iteration_statement statement statement_list direct_declarator
+%type <op> init_declarator init_declarator_list type_specifier declarator
+%type <op> declaration_specifiers declaration external_declaration
+%type <op> translation_unit declaration_statement initializer
 
 %type <num> jiz_block jmp_block jmp_target
 
@@ -44,8 +48,8 @@ int errorcount, regno;
     } op;
 };
 
-/* start the grammar with statement_list */
-%start statement_list
+/* start the grammar with translation_unit */
+%start translation_unit
 
 %%
 
@@ -53,15 +57,11 @@ primary_expression
 	: IDENTIFIER
 	  { int index, found, type;
 	    index = lookup(yylval.str, &found, &type); /* get address */
-	    if (found == -1) {
-		enterlocal(type);
-		index = lookup(yylval.str, &found, &type); /* get address */
-	    }
-	    enterprog(loadlocal, regno, index); /* load address in regno */
-#if 0
+	    if (found == -1)
 		my_error("variable not found", &@1); /* undeclared variable */
 	    else if (found == 1)
 		enterprog(loadlocal, regno, index); /* load address in regno */
+#if 0
 	    else if (found == 0)
 		enterprog(loadglobl, regno, index);
 #endif
@@ -74,6 +74,8 @@ primary_expression
 	| error { my_error("expected a number", &@1); $$.regno = -1; }
 	;
 
+/* postfix expression */
+
 unary_expression
 	: primary_expression
 	| '+' unary_expression { $$ = $2; }
@@ -83,6 +85,8 @@ unary_expression
 	    else
 		enterprog(neg, $2.regno, 0); $$ = $2; }
 	;
+
+/* cast expression */
 
 multiplicative_expression
 	: unary_expression
@@ -119,6 +123,8 @@ additive_expression
 	    } else
 		enterprog(sub, $1.regno, $3.regno); }
 	;
+
+/* shift expression */
 
 relational_expression
 	: additive_expression
@@ -176,6 +182,20 @@ equality_expression
 		enterprog(neq, $1.regno, $3.regno); }
 	;
 
+/* and expression */
+
+/* or expression */
+
+/* exclusive or expression */
+
+/* inclusive or expression */
+
+/* logical and expression */
+
+/* logical or expression */
+
+/* conditional expression */
+
 assignment_expression
 	: equality_expression
 	| unary_expression '=' assignment_expression
@@ -187,9 +207,10 @@ expression
 	| expression ',' assignment_expression { $$ = $3; }
 	;
 
-compound_statement
-	: '{' '}' { $$.regno = 0; }
-	| '{'  block_item_list '}' { $$ = $2; }
+/* constant expression */
+
+block_item
+	: statement { $$.regno = 0; }
 	;
 
 block_item_list
@@ -197,18 +218,14 @@ block_item_list
 	| block_item_list block_item
 	;
 
-block_item
-	: statement { $$.regno = 0; }
+compound_statement
+	: '{' '}' { $$.regno = 0; }
+	| '{'  block_item_list '}' { $$ = $2; }
 	;
 
 expression_statement
 	: ';' { $$.regno = regno = 0; }
 	| expression ';' { regno = 0; }
-	;
-
-jump_statement
-	: RETURN ';' { $$.regno = regno = 0; }
-	| RETURN expression ';' { regno = 0; $$ = $2; }
 	;
 
 jiz_block
@@ -243,17 +260,84 @@ iteration_statement
 	  { enterprog(jmp, $7 + 1, 0); code[$6].adr1 = code_idx + 1; }
 	;
 
+jump_statement
+	: RETURN ';' { $$.regno = regno = 0; }
+	| RETURN expression ';' { regno = 0; $$ = $2; }
+	;
+
+declaration_statement
+	: declaration
+	;
+
 statement
 	: compound_statement
 	| expression_statement
 	| selection_statement
 	| iteration_statement
 	| jump_statement
+	| declaration_statement
 	;
 
 statement_list
 	: statement
 	| statement_list statement
+	;
+
+initializer
+	: assignment_expression
+	;
+
+direct_declarator
+	: IDENTIFIER
+	  { int index, found, type;
+	    index = lookup(yylval.str, &found, &type); /* get address */
+	    if (found == -1)
+		enterlocal(type); /* enter into symbol table */
+	    else if (found == 1)
+		my_error("variable already declared", &@1);
+#if 0
+	    else if (found == 0)
+		enterprog(loadglobl, regno, index);
+#endif
+	  index = lookup(yylval.str, &found, &type); /* get address */
+	  temp.regno = type; /* the type of the variable in the regno field */
+	  temp.index = index; $$ = temp; }
+	;
+
+declarator
+	: direct_declarator
+	;
+
+init_declarator
+	: declarator '=' initializer
+	  { enterprog(storlocal, $1.index, $3.regno); }
+	| declarator
+	;
+
+init_declarator_list
+	: init_declarator
+	| init_declarator_list ',' init_declarator
+	;
+
+type_specifier
+	: INT { temp.regno = temp.index = 0; $$ = temp; }
+	;
+
+declaration_specifiers
+	: type_specifier
+	;
+
+declaration
+	: declaration_specifiers ';'
+	| declaration_specifiers init_declarator_list ';'
+	;
+
+external_declaration
+	: statement_list
+	;
+
+translation_unit
+	: external_declaration
 	;
 
 %%

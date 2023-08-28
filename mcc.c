@@ -1,7 +1,7 @@
 /*
     module  : mcc.c
-    version : 1.7
-    date    : 08/18/23
+    version : 1.8
+    date    : 08/27/23
 */
 #include "mcc.h"
 
@@ -97,6 +97,9 @@ int main(int argc, char *argv[])
 {
     int i;
 
+#if YYDEBUG
+    yydebug = 0;
+#endif
     fprintf(stderr, "MCC  -  compiled at %s on %s", __TIME__, __DATE__);
     fprintf(stderr, " (%s)\n", VERSION);
     if (argc == 2)
@@ -105,9 +108,12 @@ int main(int argc, char *argv[])
 	    return 0;
 	}
     yyparse();
-    if (errorcount)
+    if (errorcount) {
 	fprintf(stderr, "%d error(s)\n", errorcount);
-    else {
+	for (i = 0; i < local_idx; i++)
+	    printf("name = %s, type = %d, parm = %d\n", locals[i].name,
+		   locals[i].type, locals[i].parm);
+    } else {
 	fprintf(stderr, "%d line(s)\n", code_idx);
 	for (i = 1; i <= code_idx; i++)
 	    printf("%8d%15s%12" PRId64 "%12" PRId64 "\n",

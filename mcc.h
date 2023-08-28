@@ -1,7 +1,7 @@
 /*
     module  : mcc.h
-    version : 1.4
-    date    : 08/17/23
+    version : 1.5
+    date    : 08/27/23
 */
 #include <stdio.h>
 #include <string.h>
@@ -44,7 +44,6 @@ typedef enum operator {
     jmp,
     jiz
 } operator;
-
 
 typedef struct instruction {
     operator op;
