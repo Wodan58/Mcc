@@ -1,7 +1,7 @@
 /*
     module  : mcc.h
-    version : 1.5
-    date    : 08/27/23
+    version : 1.6
+    date    : 10/13/23
 */
 #include <stdio.h>
 #include <string.h>
@@ -42,7 +42,9 @@ typedef enum operator {
     loadimmed,
     storlocal,
     jmp,
-    jiz
+    jiz,
+    cal,
+    ret
 } operator;
 
 typedef struct instruction {
@@ -60,8 +62,11 @@ extern int code_idx, errorcount;
 /* --------------------------- F U N C T I O N S --------------------------- */
 
 int yylex(void);
+int next_symb(void);
+int my_yylex(void);
 void my_error(const char *str, YYLTYPE *bloc);
 void yyerror(const char *str); /* prints grammar violation message */
 void enterprog(operator op, int64_t adr1, int64_t adr2);
 void enterlocal(int type);
+void enterfunction(int type);
 int lookup(char *str, int *found, int *type);

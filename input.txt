@@ -1,1 +1,9 @@
-{ int x = 3, y = 5; return x + y; }
+int ret3()
+{
+    return 3;
+}
+
+int main()
+{
+   return ret3();
+}

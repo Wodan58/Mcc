@@ -20,9 +20,9 @@ increases the size of the binary and decreases the amount of lines of code.
 Chibicc compiles directly to x86_64 assembly, using AT&T syntax. I'll compile
 to byte code that can either be interpreted or converted to assembly later on.
 
-Chibicc uses the normal call/ret of x86 machine code. I'll be building a
+Chibicc uses the normal call/ret of x86 machine code. ~I'll be building a
 stackless version instead. TBH there is a stack, but it will be allocated on
-the heap.
+the heap.~
 
 Chibicc uses make as the build system. I'll use Cmake instead.
 

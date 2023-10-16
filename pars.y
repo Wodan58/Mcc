@@ -1,8 +1,8 @@
 %{
 /*
     module  : pars.y
-    version : 1.13
-    date    : 08/27/23
+    version : 1.14
+    date    : 10/13/23
 */
 #include "mcc.h"
 
@@ -24,14 +24,16 @@ int errorcount, regno;
 %token INT
 %token RETURN
 
+%type <op> postfix_expression argument_expression_list
 %type <op> primary_expression unary_expression multiplicative_expression
 %type <op> additive_expression relational_expression equality_expression
 %type <op> assignment_expression expression compound_statement block_item_list
 %type <op> block_item expression_statement jump_statement selection_statement
-%type <op> iteration_statement statement statement_list direct_declarator
+%type <op> iteration_statement statement direct_declarator
 %type <op> init_declarator init_declarator_list type_specifier declarator
 %type <op> declaration_specifiers declaration external_declaration
 %type <op> translation_unit declaration_statement initializer
+%type <op> function_definition
 
 %type <num> jiz_block jmp_block jmp_target
 
@@ -58,9 +60,11 @@ primary_expression
 	  { int index, found, type;
 	    index = lookup(yylval.str, &found, &type); /* get address */
 	    if (found == -1)
-		my_error("variable not found", &@1); /* undeclared variable */
+		my_error("var/fun not found", &@1); /* undeclared var/fun */
 	    else if (found == 1)
 		enterprog(loadlocal, regno, index); /* load address in regno */
+	    else if (found == 2)
+		enterprog(cal, type, 0); /* number of parameters needed */
 #if 0
 	    else if (found == 0)
 		enterprog(loadglobl, regno, index);
@@ -74,10 +78,19 @@ primary_expression
 	| error { my_error("expected a number", &@1); $$.regno = -1; }
 	;
 
-/* postfix expression */
+postfix_expression
+	: primary_expression
+	| postfix_expression '(' ')'
+	| postfix_expression '(' argument_expression_list ')'
+	;
+
+argument_expression_list
+	: assignment_expression
+	| argument_expression_list ',' assignment_expression
+	;
 
 unary_expression
-	: primary_expression
+	: postfix_expression
 	| '+' unary_expression { $$ = $2; }
 	| '-' unary_expression
 	  { if (code[code_idx].op == loadimmed)
@@ -278,11 +291,6 @@ statement
 	| declaration_statement
 	;
 
-statement_list
-	: statement
-	| statement_list statement
-	;
-
 initializer
 	: assignment_expression
 	;
@@ -291,17 +299,18 @@ direct_declarator
 	: IDENTIFIER
 	  { int index, found, type;
 	    index = lookup(yylval.str, &found, &type); /* get address */
-	    if (found == -1)
-		enterlocal(type); /* enter into symbol table */
-	    else if (found == 1)
-		my_error("variable already declared", &@1);
-#if 0
-	    else if (found == 0)
-		enterprog(loadglobl, regno, index);
-#endif
+	    if (found == 1)
+		my_error("name already declared", &@1);
+	    else if (found == -1) {
+		if (next_symb() == '(')
+		    enterfunction(code_idx + 1);
+		else
+		    enterlocal(type); /* enter local into symbol table */
+	    }
 	  index = lookup(yylval.str, &found, &type); /* get address */
 	  temp.regno = type; /* the type of the variable in the regno field */
 	  temp.index = index; $$ = temp; }
+	| direct_declarator '(' ')'
 	;
 
 declarator
@@ -332,12 +341,26 @@ declaration
 	| declaration_specifiers init_declarator_list ';'
 	;
 
+declaration_list
+	: declaration
+	| declaration_list declaration
+	;
+
+function_definition
+	: declaration_specifiers declarator declaration_list compound_statement
+	  { enterprog(ret, 0, 0); }
+	| declaration_specifiers declarator compound_statement
+	  { enterprog(ret, 0, 0); }
+	;
+
 external_declaration
-	: statement_list
+	: function_definition
+	| declaration
 	;
 
 translation_unit
 	: external_declaration
+	| translation_unit external_declaration
 	;
 
 %%

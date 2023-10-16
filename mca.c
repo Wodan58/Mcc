@@ -1,7 +1,7 @@
 /*
     module  : mca.c
-    version : 1.4
-    date    : 08/17/23
+    version : 1.5
+    date    : 10/13/23
 */
 #include "mcc.h"
 
@@ -93,6 +93,8 @@ int main(int argc, char *argv[])
 
 	case jmp:
 	case jiz:
+	case cal:
+	case ret:
 	    break;
 
 	default:

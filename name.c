@@ -1,7 +1,7 @@
 /*
     module  : name.c
-    version : 1.3
-    date    : 08/17/23
+    version : 1.4
+    date    : 10/13/23
 */
 char *operator_NAMES[] = {
     "ADD",
@@ -20,5 +20,7 @@ char *operator_NAMES[] = {
     "STORLOCAL",
     "JMP",
     "JIZ",
+    "CAL",
+    "RET",
     0
 };

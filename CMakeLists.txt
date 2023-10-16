@@ -1,11 +1,11 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.13
-#   date    : 08/24/23
+#   version : 1.14
+#   date    : 10/13/23
 #
 cmake_minimum_required(VERSION 3.0)
 # replace 1.0 by I within percents before posting
-project(MCC VERSION 1.13)
+project(MCC VERSION 1.0)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -23,7 +23,7 @@ endif()
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 add_definitions(-DYYDEBUG -DVERSION="${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
 add_executable(mcc mcc.c ${FLEX_MyScanner_OUTPUTS} ${BISON_MyParser_OUTPUTS}
-               name.c)
+               name.c ylex.c)
 add_executable(mcd mcd.c name.c)
 add_dependencies(mcd mcc)
 add_executable(mci mci.c name.c)

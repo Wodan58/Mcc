@@ -1,7 +1,7 @@
 /*
     module  : mcc.c
-    version : 1.8
-    date    : 08/27/23
+    version : 1.9
+    date    : 10/13/23
 */
 #include "mcc.h"
 
@@ -62,6 +62,18 @@ void enterlocal(int type)
     local_idx++;
 }
 
+void enterfunction(int type)
+{
+    if (function_idx >= MAXSYM) {
+	yyerror("Exceeding function symbol table");
+	return;
+    }
+    functions[function_idx].name = yylval.str;
+    functions[function_idx].type = type;
+    functions[function_idx].parm = 0;
+    function_idx++;
+}
+
 /*
     lookup locates a symbol in the symbol table. Found = 1 means found in local
     table; found = 0 means found in global table; found = 2 means found in
@@ -113,10 +125,21 @@ int main(int argc, char *argv[])
 	for (i = 0; i < local_idx; i++)
 	    printf("name = %s, type = %d, parm = %d\n", locals[i].name,
 		   locals[i].type, locals[i].parm);
+	for (i = 0; i < function_idx; i++)
+	    printf("name = %s, type = %d, parm = %d\n", functions[i].name,
+		   functions[i].type, functions[i].parm);
     } else {
 	fprintf(stderr, "%d line(s)\n", code_idx);
 	for (i = 1; i <= code_idx; i++)
 	    printf("%8d%15s%12" PRId64 "%12" PRId64 "\n",
 		    i, operator_NAMES[code[i].op], code[i].adr1, code[i].adr2);
+#if 0
+	for (i = 0; i < local_idx; i++)
+	    printf("name = %s, type = %d, parm = %d\n", locals[i].name,
+		   locals[i].type, locals[i].parm);
+	for (i = 0; i < function_idx; i++)
+	    printf("name = %s, type = %d, parm = %d\n", functions[i].name,
+		   functions[i].type, functions[i].parm);
+#endif
     }
 }

@@ -1,10 +1,12 @@
 %{
 /*
     module  : lexr.l
-    version : 1.11
-    date    : 08/27/23
+    version : 1.12
+    date    : 10/13/23
 */
 #include "mcc.h"
+
+#define YY_DECL		int my_yylex(void)
 
 char line[MAXLIN + 1]; /* input line */
 
@@ -36,6 +38,7 @@ A			[a-zA-Z_0-9]
 
 %%
 
+<<EOF>>			return 0;
 [\n]+.*\n		{ int i = copyline(); yyless(i); }
 "<="			{ return LE_OP; }
 ">="			{ return GE_OP; }

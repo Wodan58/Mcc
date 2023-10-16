@@ -1,7 +1,7 @@
 /*
     module  : mci.c
-    version : 1.5
-    date    : 08/18/23
+    version : 1.6
+    date    : 10/13/23
 */
 #include "mcc.h"
 
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 	    printf("%12" PRId64 "\n", reg[pc->adr2]);
 	    pc++;
 	    break;
-
+#endif
 	case cal:
 	    if (stacktop + pc->adr2 > maxstack) {
 		printf("stack overflow, PC=%" PRId64 ", execution aborted\n",
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
 	    baseregister = stack[stacktop + 1];
 	    pc = &code[stack[stacktop + 2]];
 	    break;
-#endif
+
 	case jmp:
 	    pc = &code[pc->adr1];
 	    break;
