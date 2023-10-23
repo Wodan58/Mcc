@@ -10,14 +10,14 @@ This project implements a C compiler, following the road map of
 
 The best way to learn is to follow every step, doing everything differently.
 
-Chibicc uses malloc, no free. I'll use GC_malloc instead. I don't mind using
+Chibicc uses malloc, no free. I'll use GC\_malloc instead. I don't mind using
 the [BDW garbage collector](https://github.com/ivmai/bdwgc) and the aim is not
 to build the smallest possible binary.
 
 Chibicc uses a recursive descent parser. I'll use flex and bison instead. This
 increases the size of the binary and decreases the amount of lines of code.
 
-Chibicc compiles directly to x86_64 assembly, using AT&T syntax. I'll compile
+Chibicc compiles directly to x86\_64 assembly, using AT&T syntax. I'll compile
 to byte code that can either be interpreted or converted to assembly later on.
 
 Chibicc uses the normal call/ret of x86 machine code. ~I'll be building a

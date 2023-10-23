@@ -1,7 +1,7 @@
 /*
     module  : mcd.c
-    version : 1.4
-    date    : 08/17/23
+    version : 1.5
+    date    : 10/23/23
 */
 #include "mcc.h"
 
@@ -9,19 +9,18 @@
     The task is to read a text file and convert this to binary.
 */
 
-/* ----------------------------- D E F I N E S ----------------------------- */
-
-#define MAXSTR	80
-
 /* --------------------------- F U N C T I O N S --------------------------- */
 
 int main(int argc, char *argv[])
 {
+    time_t t;
+    struct tm *tm;
     int i, j;
     FILE *fp;
     int64_t l;
-    instruction ins;
-    char str[MAXSTR], *output = "mcc.out";
+    int32_t m;
+    unsigned char op;
+    char str[MAXLIN], *format = "%d%m%Y 10/23/23M%S", *output = "mcc.out";
 
     fprintf(stderr, "MCD  -  compiled at %s on %s", __TIME__, __DATE__);
     fprintf(stderr, " (%s)\n", VERSION);
@@ -31,20 +30,36 @@ int main(int argc, char *argv[])
 	fprintf(stderr, "%s (cannot create)\n", output);
 	return 1;
     }
+    t = time(0);
+    tm = localtime(&t);
+    strftime(str, MAXLIN, format, tm);
+    fprintf(fp, "%s\n", str);				/* header */
     for (j = 0; operator_NAMES[j]; j++)
 	;
-    while (scanf("%" SCNd64 "%s %" SCNd64 "%" SCNd64,
-		 &l, str, &ins.adr1, &ins.adr2) == 4) {
-	for (i = 0; i < j; i++)
-	    if (!strcmp(str, operator_NAMES[i]))
-		break;
-	if (i == j)
-	    fprintf(stderr, "%s not found\n", str);
-	else {
-	    ins.op = i;
-	    fwrite(&ins, sizeof(ins), 1, fp);
+    while (scanf("%" SCNd64 "%s", &l, str) == 2) {
+	i = op = str[0];
+	if (isalpha(op)) {
+	    for (i = 0; i < j; i++)
+		if (!strcmp(str, operator_NAMES[i]))
+		    break;
+	    if (i == j) {
+		fprintf(stderr, "%s not found\n", str);
+		goto done;
+	    }
+	    op = i;
+	}
+	fwrite(&op, 1, 1, fp);				/* opcode */
+	if (i < hlt) {
+	    scanf("%" SCNd64, &l);
+	    if (i < jmp)				/* immediates */
+		fwrite(&l, sizeof(int64_t), 1, fp);	/* full value */
+	    else {
+		m = l;
+		fwrite(&m, sizeof(int32_t), 1, fp);	/* smaller value */
+	    }
 	}
     }
+done:
     fclose(fp);
     return 0;
 }

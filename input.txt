@@ -1,9 +1,28 @@
-int ret3()
+int argument, value;
+
+int factorial()
 {
-    return 3;
+    int temporary;
+
+    if (!argument)
+        value = 1;
+    else {
+        temporary = argument;
+        argument = argument - 1;
+        factorial();
+        value = value * temporary;
+        argument = temporary;
+    }
+    return value;
 }
 
 int main()
 {
-   return ret3();
+    argument = 0;
+    while (argument <= 10) {
+        factorial();
+        writeint;
+        argument = argument + 1;
+    }
+    return argument;
 }

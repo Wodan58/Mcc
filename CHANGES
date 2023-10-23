@@ -1,4 +1,6 @@
 
+1.15
+	Add global variables
 1.14
 	Support zero-arity function calls
 1.13

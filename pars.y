@@ -1,41 +1,40 @@
 %{
 /*
     module  : pars.y
-    version : 1.14
-    date    : 10/13/23
+    version : 1.15
+    date    : 10/23/23
 */
 #include "mcc.h"
 
-struct opcode temp;
-int errorcount, regno;
+int errorcount;
 %}
 
 %token <str> IDENTIFIER
-%token <num> CONSTANT
-%token LE_OP
-%token GE_OP
-%token EQ_OP
-%token NE_OP
-%token IF
-%token ELSE
-%token ENDIF
-%token FOR
-%token WHILE
-%token INT
-%token RETURN
+%token <num> I_CONSTANT
 
-%type <op> postfix_expression argument_expression_list
-%type <op> primary_expression unary_expression multiplicative_expression
-%type <op> additive_expression relational_expression equality_expression
-%type <op> assignment_expression expression compound_statement block_item_list
-%type <op> block_item expression_statement jump_statement selection_statement
-%type <op> iteration_statement statement direct_declarator
-%type <op> init_declarator init_declarator_list type_specifier declarator
-%type <op> declaration_specifiers declaration external_declaration
-%type <op> translation_unit declaration_statement initializer
-%type <op> function_definition
+%token F_CONSTANT STRING_LITERAL FUNC_NAME SIZEOF
+%token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
+%token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
+%token SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
+%token XOR_ASSIGN OR_ASSIGN
+%token TYPEDEF_NAME ENUMERATION_CONSTANT
 
-%type <num> jiz_block jmp_block jmp_target
+%token TYPEDEF EXTERN STATIC AUTO REGISTER INLINE
+%token CONST RESTRICT VOLATILE
+%token BOOL CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
+%token COMPLEX IMAGINARY
+%token STRUCT UNION ENUM ELLIPSIS
+
+%token CASE DEFAULT IF SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
+
+%token ALIGNAS ALIGNOF ATOMIC GENERIC NORETURN STATIC_ASSERT THREAD_LOCAL
+
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
+
+%token WRITEBOOL WRITEINT
+
+%type <num> unary_operator assign jiz_block jmp_block jmp_target
 
 /* generate include file with symbols and types */
 %defines
@@ -44,10 +43,6 @@ int errorcount, regno;
 %union {
     char *str;		/* return values from lexer */
     int64_t num;
-    struct opcode {	/* evaluation values parser */
-	int regno;
-	int index;
-    } op;
 };
 
 /* start the grammar with translation_unit */
@@ -56,32 +51,59 @@ int errorcount, regno;
 %%
 
 primary_expression
+	: IDENTIFIER { int64_t val; int found = lookup($1, &val); if (!found)
+	  my_error("name not found", &@1); else if (found == 3)
+	  enterprog(cal, val); else { enterprog(loadimmed, val); if (found == 1)
+	  enterprog(loadlocal, 0); else enterprog(loadglobl, 0); } }
+	| WRITEBOOL { enterprog(writebool, 0); }
+	| WRITEINT { enterprog(writeint, 0); }
+	| constant
+	| string
+	| '(' expression ')'
+	| generic_selection
+	;
+
+constant
+	: I_CONSTANT { enterprog(loadimmed, $1); }
+				/* includes character_constant */
+	| F_CONSTANT
+	| ENUMERATION_CONSTANT	/* after it has been defined as such */
+	;
+
+enumeration_constant		/* before it has been defined as such */
 	: IDENTIFIER
-	  { int index, found, type;
-	    index = lookup(yylval.str, &found, &type); /* get address */
-	    if (found == -1)
-		my_error("var/fun not found", &@1); /* undeclared var/fun */
-	    else if (found == 1)
-		enterprog(loadlocal, regno, index); /* load address in regno */
-	    else if (found == 2)
-		enterprog(cal, type, 0); /* number of parameters needed */
-#if 0
-	    else if (found == 0)
-		enterprog(loadglobl, regno, index);
-#endif
-	  temp.regno = regno++; /* variables are loaded in register regno */
-	  temp.index = index; $$ = temp; }
-	| CONSTANT { enterprog(loadimmed, 10, yylval.num);
-	  temp.regno = 10; /* constants are loaded in register 10 */
-	  temp.index = 0; $$ = temp; }
-	| '(' additive_expression ')' { $$ = $2; }
-	| error { my_error("expected a number", &@1); $$.regno = -1; }
+	;
+
+string
+	: STRING_LITERAL
+	| FUNC_NAME
+	;
+
+generic_selection
+	: GENERIC '(' assignment_expression ',' generic_assoc_list ')'
+	;
+
+generic_assoc_list
+	: generic_association
+	| generic_assoc_list ',' generic_association
+	;
+
+generic_association
+	: type_name ':' assignment_expression
+	| DEFAULT ':' assignment_expression
 	;
 
 postfix_expression
 	: primary_expression
+	| postfix_expression '[' expression ']'
 	| postfix_expression '(' ')'
 	| postfix_expression '(' argument_expression_list ')'
+	| postfix_expression '.' IDENTIFIER
+	| postfix_expression PTR_OP IDENTIFIER
+	| postfix_expression INC_OP
+	| postfix_expression DEC_OP
+	| '(' type_name ')' '{' initializer_list '}'
+	| '(' type_name ')' '{' initializer_list ',' '}'
 	;
 
 argument_expression_list
@@ -91,236 +113,154 @@ argument_expression_list
 
 unary_expression
 	: postfix_expression
-	| '+' unary_expression { $$ = $2; }
-	| '-' unary_expression
-	  { if (code[code_idx].op == loadimmed)
-		code[code_idx].adr2 = -code[code_idx].adr2;
-	    else
-		enterprog(neg, $2.regno, 0); $$ = $2; }
+	| INC_OP unary_expression
+	| DEC_OP unary_expression
+	| unary_operator cast_expression { if ($1 != '+') enterprog($1, 0); }
+	| SIZEOF unary_expression
+	| SIZEOF '(' type_name ')'
+	| ALIGNOF '(' type_name ')'
 	;
 
-/* cast expression */
+unary_operator
+	: '&' { $$ = '&'; }
+	| '*' { $$ = '*'; }
+	| '+' { $$ = '+'; }
+	| '-' { $$ = '-'; }
+	| '~' { $$ = '~'; }
+	| '!' { $$ = '!'; }
+	;
+
+cast_expression
+	: unary_expression
+	| '(' type_name ')' cast_expression
+	;
 
 multiplicative_expression
-	: unary_expression
-	| multiplicative_expression '*' unary_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 *= code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(mul, $1.regno, $3.regno); }
-	| multiplicative_expression '/' unary_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 /= code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(dvd, $1.regno, $3.regno); }
+	: cast_expression
+	| multiplicative_expression '*' { enterprog(push, 0); } cast_expression
+	  { enterprog(mul, 0); }
+	| multiplicative_expression '/' { enterprog(push, 0); } cast_expression
+	  { enterprog(dvd, 0); }
+	| multiplicative_expression '%' { enterprog(push, 0); } cast_expression
+	  { enterprog(mod, 0); }
 	;
 
 additive_expression
 	: multiplicative_expression
-	| additive_expression '+' multiplicative_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 += code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(add, $1.regno, $3.regno); }
-	| additive_expression '-' multiplicative_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 -= code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(sub, $1.regno, $3.regno); }
+	| additive_expression '+' { enterprog(push, 0); }
+	  multiplicative_expression { enterprog(add, 0); }
+	| additive_expression '-' { enterprog(push, 0); }
+	  multiplicative_expression { enterprog(sub, 0); }
 	;
 
-/* shift expression */
+shift_expression
+	: additive_expression
+	| shift_expression LEFT_OP additive_expression
+	| shift_expression RIGHT_OP additive_expression
+	;
 
 relational_expression
-	: additive_expression
-	| relational_expression '<' additive_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 <
-					  code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(lss, $1.regno, $3.regno); }
-	| relational_expression '>' additive_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 >
-					  code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(gtr, $1.regno, $3.regno); }
-	| relational_expression LE_OP additive_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 <=
-					  code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(leq, $1.regno, $3.regno); }
-	| relational_expression GE_OP additive_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 >=
-					  code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(geq, $1.regno, $3.regno); }
+	: shift_expression
+	| relational_expression '<' { enterprog(push, 0); } shift_expression
+	  { enterprog(lss, 0); }
+	| relational_expression '>' { enterprog(push, 0); } shift_expression
+	  { enterprog(gtr, 0); }
+	| relational_expression LE_OP { enterprog(push, 0); } shift_expression
+	  { enterprog(leq, 0); }
+	| relational_expression GE_OP { enterprog(push, 0); } shift_expression
+	  { enterprog(geq, 0); }
 	;
 
 equality_expression
 	: relational_expression
-	| equality_expression EQ_OP relational_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 ==
-					  code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(eql, $1.regno, $3.regno); }
-	| equality_expression NE_OP relational_expression
-	  { if (code[code_idx].op == loadimmed &&
-		code[code_idx - 1].op == loadimmed) {
-		code[code_idx - 1].adr2 = code[code_idx - 1].adr2 !=
-					  code[code_idx].adr2;
-		code_idx--;
-	    } else
-		enterprog(neq, $1.regno, $3.regno); }
+	| equality_expression EQ_OP { enterprog(push, 0); }
+	  relational_expression { enterprog(eql, 0); }
+	| equality_expression NE_OP { enterprog(push, 0); }
+	  relational_expression { enterprog(neq, 0); }
 	;
 
-/* and expression */
+and_expression
+	: equality_expression
+	| and_expression '&' equality_expression
+	;
 
-/* or expression */
+exclusive_or_expression
+	: and_expression
+	| exclusive_or_expression '^' and_expression
+	;
 
-/* exclusive or expression */
+inclusive_or_expression
+	: exclusive_or_expression
+	| inclusive_or_expression '|' exclusive_or_expression
+	;
 
-/* inclusive or expression */
+logical_and_expression
+	: inclusive_or_expression
+	| logical_and_expression AND_OP { enterprog(push, 0); }
+	  inclusive_or_expression { enterprog(ann, 0); }
+	;
 
-/* logical and expression */
+logical_or_expression
+	: logical_and_expression
+	| logical_or_expression OR_OP { enterprog(push, 0); }
+	  logical_and_expression { enterprog(orr, 0); }
+	;
 
-/* logical or expression */
+conditional_expression
+	: logical_or_expression
+	| logical_or_expression '?' expression ':' conditional_expression
+	;
 
-/* conditional expression */
+assign
+	: { $$ = assign(); }
+	;
 
 assignment_expression
-	: equality_expression
-	| unary_expression '=' assignment_expression
-	  { enterprog(storlocal, $1.index, $3.regno); $$ = $3; }
+	: conditional_expression
+	| unary_expression assign assignment_operator assignment_expression
+	  { enterprog($2 == loadlocal ? storlocal : storglobl, 0); }
+	;
+
+assignment_operator
+	: '='
+	| MUL_ASSIGN
+	| DIV_ASSIGN
+	| MOD_ASSIGN
+	| ADD_ASSIGN
+	| SUB_ASSIGN
+	| LEFT_ASSIGN
+	| RIGHT_ASSIGN
+	| AND_ASSIGN
+	| XOR_ASSIGN
+	| OR_ASSIGN
 	;
 
 expression
 	: assignment_expression
-	| expression ',' assignment_expression { $$ = $3; }
+	| expression ',' assignment_expression
 	;
 
-/* constant expression */
-
-block_item
-	: statement { $$.regno = 0; }
+constant_expression
+	: conditional_expression	/* with constraints */
 	;
 
-block_item_list
-	: block_item
-	| block_item_list block_item
+declaration
+	: declaration_specifiers ';'
+	| declaration_specifiers init_declarator_list ';'
+	| static_assert_declaration
 	;
 
-compound_statement
-	: '{' '}' { $$.regno = 0; }
-	| '{'  block_item_list '}' { $$ = $2; }
-	;
-
-expression_statement
-	: ';' { $$.regno = regno = 0; }
-	| expression ';' { regno = 0; }
-	;
-
-jiz_block
-	: { enterprog(jiz, -1, code[code_idx].adr1); $$ = code_idx; }
-	;
-
-jmp_block
-	: { enterprog(jmp, -1, 0); $$ = code_idx; }
-	;
-
-selection_statement
-	: IF '(' expression ')' jiz_block statement jmp_block
-	  { code[$5].adr1 = code_idx + 1; } ELSE statement
-	  { code[$7].adr1 = code_idx + 1; } ENDIF { $$.regno = -1; }
-	| IF '(' expression ')' jiz_block statement
-	  { code[$5].adr1 = code_idx + 1; } ENDIF { $$.regno = -1; }
-	;
-
-jmp_target
-	: { $$ = code_idx + 1; }
-	;
-
-iteration_statement
-	: WHILE '(' jmp_target expression jiz_block ')' statement
-	  { enterprog(jmp, $3, 0); code[$5].adr1 = code_idx + 1; }
-	| FOR '(' expression_statement jmp_target expression_statement
-	  jiz_block ')' statement { enterprog(jmp, $4, 0);
-	  code[$6].adr1 = code_idx + 1; }
-	| FOR '(' expression_statement jmp_target expression_statement
-	  jiz_block jmp_block expression { enterprog(jmp, $4, 0);
-	  code[$7].adr1 = code_idx + 1; } ')' statement
-	  { enterprog(jmp, $7 + 1, 0); code[$6].adr1 = code_idx + 1; }
-	;
-
-jump_statement
-	: RETURN ';' { $$.regno = regno = 0; }
-	| RETURN expression ';' { regno = 0; $$ = $2; }
-	;
-
-declaration_statement
-	: declaration
-	;
-
-statement
-	: compound_statement
-	| expression_statement
-	| selection_statement
-	| iteration_statement
-	| jump_statement
-	| declaration_statement
-	;
-
-initializer
-	: assignment_expression
-	;
-
-direct_declarator
-	: IDENTIFIER
-	  { int index, found, type;
-	    index = lookup(yylval.str, &found, &type); /* get address */
-	    if (found == 1)
-		my_error("name already declared", &@1);
-	    else if (found == -1) {
-		if (next_symb() == '(')
-		    enterfunction(code_idx + 1);
-		else
-		    enterlocal(type); /* enter local into symbol table */
-	    }
-	  index = lookup(yylval.str, &found, &type); /* get address */
-	  temp.regno = type; /* the type of the variable in the regno field */
-	  temp.index = index; $$ = temp; }
-	| direct_declarator '(' ')'
-	;
-
-declarator
-	: direct_declarator
-	;
-
-init_declarator
-	: declarator '=' initializer
-	  { enterprog(storlocal, $1.index, $3.regno); }
-	| declarator
+declaration_specifiers
+	: storage_class_specifier declaration_specifiers
+	| storage_class_specifier
+	| type_specifier declaration_specifiers
+	| type_specifier
+	| type_qualifier declaration_specifiers
+	| type_qualifier
+	| function_specifier declaration_specifiers
+	| function_specifier
+	| alignment_specifier declaration_specifiers
+	| alignment_specifier
 	;
 
 init_declarator_list
@@ -328,29 +268,329 @@ init_declarator_list
 	| init_declarator_list ',' init_declarator
 	;
 
+init_declarator
+	: declarator '=' initializer
+	| declarator
+	;
+
+storage_class_specifier
+	: TYPEDEF	/* identifiers must be flagged as TYPEDEF_NAME */
+	| EXTERN
+	| STATIC
+	| THREAD_LOCAL
+	| AUTO
+	| REGISTER
+	;
+
 type_specifier
-	: INT { temp.regno = temp.index = 0; $$ = temp; }
+	: VOID
+	| CHAR
+	| SHORT
+	| INT
+	| LONG
+	| FLOAT
+	| DOUBLE
+	| SIGNED
+	| UNSIGNED
+	| BOOL
+	| COMPLEX
+	| IMAGINARY	  	/* non-mandated extension */
+	| atomic_type_specifier
+	| struct_or_union_specifier
+	| enum_specifier
+	| TYPEDEF_NAME		/* after it has been defined as such */
 	;
 
-declaration_specifiers
-	: type_specifier
+struct_or_union_specifier
+	: struct_or_union '{' struct_declaration_list '}'
+	| struct_or_union IDENTIFIER '{' struct_declaration_list '}'
+	| struct_or_union IDENTIFIER
 	;
 
-declaration
-	: declaration_specifiers ';'
-	| declaration_specifiers init_declarator_list ';'
+struct_or_union
+	: STRUCT
+	| UNION
 	;
 
-declaration_list
+struct_declaration_list
+	: struct_declaration
+	| struct_declaration_list struct_declaration
+	;
+
+struct_declaration
+	: specifier_qualifier_list ';'	/* for anonymous struct/union */
+	| specifier_qualifier_list struct_declarator_list ';'
+	| static_assert_declaration
+	;
+
+specifier_qualifier_list
+	: type_specifier specifier_qualifier_list
+	| type_specifier
+	| type_qualifier specifier_qualifier_list
+	| type_qualifier
+	;
+
+struct_declarator_list
+	: struct_declarator
+	| struct_declarator_list ',' struct_declarator
+	;
+
+struct_declarator
+	: ':' constant_expression
+	| declarator ':' constant_expression
+	| declarator
+	;
+
+enum_specifier
+	: ENUM '{' enumerator_list '}'
+	| ENUM '{' enumerator_list ',' '}'
+	| ENUM IDENTIFIER '{' enumerator_list '}'
+	| ENUM IDENTIFIER '{' enumerator_list ',' '}'
+	| ENUM IDENTIFIER
+	;
+
+enumerator_list
+	: enumerator
+	| enumerator_list ',' enumerator
+	;
+
+enumerator	/* identifiers must be flagged as ENUMERATION_CONSTANT */
+	: enumeration_constant '=' constant_expression
+	| enumeration_constant
+	;
+
+atomic_type_specifier
+	: ATOMIC '(' type_name ')'
+	;
+
+type_qualifier
+	: CONST
+	| RESTRICT
+	| VOLATILE
+/*	| ATOMIC	*/
+	;
+
+function_specifier
+	: INLINE
+	| NORETURN
+	;
+
+alignment_specifier
+	: ALIGNAS '(' type_name ')'
+	| ALIGNAS '(' constant_expression ')'
+	;
+
+declarator
+	: pointer direct_declarator
+	| direct_declarator
+	;
+
+direct_declarator
+	: IDENTIFIER { int64_t value; int found = lookup($1, &value);
+	  if (!found) { if (next_symb() == '(') enterfunction(); else
+	  enterlocal(); } else my_error("name already declared", &@1); }
+	| '(' declarator ')'
+	| direct_declarator '[' ']'
+	| direct_declarator '[' '*' ']'
+	| direct_declarator '[' STATIC type_qualifier_list
+	  assignment_expression ']'
+	| direct_declarator '[' STATIC assignment_expression ']'
+	| direct_declarator '[' type_qualifier_list '*' ']'
+	| direct_declarator '[' type_qualifier_list STATIC
+	  assignment_expression ']'
+	| direct_declarator '[' type_qualifier_list assignment_expression ']'
+	| direct_declarator '[' type_qualifier_list ']'
+	| direct_declarator '[' assignment_expression ']'
+	| direct_declarator '(' parameter_type_list ')'
+	| direct_declarator '(' ')'
+	| direct_declarator '(' identifier_list ')'
+	;
+
+pointer
+	: '*' type_qualifier_list pointer
+	| '*' type_qualifier_list
+	| '*' pointer
+	| '*'
+	;
+
+type_qualifier_list
+	: type_qualifier
+	| type_qualifier_list type_qualifier
+	;
+
+
+parameter_type_list
+	: parameter_list ',' ELLIPSIS
+	| parameter_list
+	;
+
+parameter_list
+	: parameter_declaration
+	| parameter_list ',' parameter_declaration
+	;
+
+parameter_declaration
+	: declaration_specifiers declarator
+	| declaration_specifiers abstract_declarator
+	| declaration_specifiers
+	;
+
+identifier_list
+	: IDENTIFIER
+	| identifier_list ',' IDENTIFIER
+	;
+
+type_name
+	: specifier_qualifier_list abstract_declarator
+	| specifier_qualifier_list
+	;
+
+abstract_declarator
+	: pointer direct_abstract_declarator
+	| pointer
+	| direct_abstract_declarator
+	;
+
+direct_abstract_declarator
+	: '(' abstract_declarator ')'
+	| '[' ']'
+	| '[' '*' ']'
+	| '[' STATIC type_qualifier_list assignment_expression ']'
+	| '[' STATIC assignment_expression ']'
+	| '[' type_qualifier_list STATIC assignment_expression ']'
+	| '[' type_qualifier_list assignment_expression ']'
+	| '[' type_qualifier_list ']'
+	| '[' assignment_expression ']'
+	| direct_abstract_declarator '[' ']'
+	| direct_abstract_declarator '[' '*' ']'
+	| direct_abstract_declarator '[' STATIC type_qualifier_list
+	  assignment_expression ']'
+	| direct_abstract_declarator '[' STATIC assignment_expression ']'
+	| direct_abstract_declarator '[' type_qualifier_list
+	  assignment_expression ']'
+	| direct_abstract_declarator '[' type_qualifier_list STATIC
+	  assignment_expression ']'
+	| direct_abstract_declarator '[' type_qualifier_list ']'
+	| direct_abstract_declarator '[' assignment_expression ']'
+	| '(' ')'
+	| '(' parameter_type_list ')'
+	| direct_abstract_declarator '(' ')'
+	| direct_abstract_declarator '(' parameter_type_list ')'
+	;
+
+initializer
+	: '{' initializer_list '}'
+	| '{' initializer_list ',' '}'
+	| assignment_expression
+	;
+
+initializer_list
+	: designation initializer
+	| initializer
+	| initializer_list ',' designation initializer
+	| initializer_list ',' initializer
+	;
+
+designation
+	: designator_list '='
+	;
+
+designator_list
+	: designator
+	| designator_list designator
+	;
+
+designator
+	: '[' constant_expression ']'
+	| '.' IDENTIFIER
+	;
+
+static_assert_declaration
+	: STATIC_ASSERT '(' constant_expression ',' STRING_LITERAL ')' ';'
+	;
+
+statement
+	: labeled_statement
+	| compound_statement
+	| expression_statement
+	| selection_statement
+	| iteration_statement
+	| jump_statement
+	;
+
+labeled_statement
+	: IDENTIFIER ':' statement
+	| CASE constant_expression ':' statement
+	| DEFAULT ':' statement
+	;
+
+compound_statement
+	: '{' '}'
+	| '{'  block_item_list '}'
+	;
+
+block_item_list
+	: block_item
+	| block_item_list block_item
+	;
+
+block_item
 	: declaration
-	| declaration_list declaration
+	| statement
 	;
 
-function_definition
-	: declaration_specifiers declarator declaration_list compound_statement
-	  { enterprog(ret, 0, 0); }
-	| declaration_specifiers declarator compound_statement
-	  { enterprog(ret, 0, 0); }
+expression_statement
+	: ';'
+	| expression ';'
+	;
+
+jiz_block
+	: { $$ = code_idx; enterprog(jiz, 0); }
+	;
+
+jmp_block
+	: { $$ = code_idx; enterprog(jmp, 0); }
+	;
+
+selection_statement
+	: IF '(' expression ')' jiz_block statement
+	  ELSE jmp_block { code[$5].val = code_idx; } statement
+	  { code[$8].val = code_idx; } 
+	| IF '(' expression ')' jiz_block statement %prec LOWER_THAN_ELSE
+	  { code[$5].val = code_idx; }
+	| SWITCH '(' expression ')' statement
+	;
+
+
+jmp_target
+	: { $$ = code_idx; }
+	;
+
+iteration_statement
+	: WHILE jmp_target '(' expression ')' jiz_block statement
+	  { enterprog(jmp, $2); code[$6].val = code_idx; }
+	| DO statement WHILE '(' expression ')' ';'
+	| FOR '(' expression_statement jmp_target expression_statement ')'
+	  jiz_block statement { enterprog(jmp, $4); code[$7].val = code_idx; }
+	| FOR '(' expression_statement jmp_target expression_statement
+	  jiz_block jmp_block expression { enterprog(jmp, $4); code[$7].val =
+	  code_idx; } ')' statement { enterprog(jmp, $7 + 1); code[$6].val =
+	  code_idx; }
+	| FOR '(' declaration expression_statement ')' statement
+	| FOR '(' declaration expression_statement expression ')' statement
+	;
+
+jump_statement
+	: GOTO IDENTIFIER ';'
+	| CONTINUE ';'
+	| BREAK ';'
+	| RETURN ';'
+	| RETURN expression ';'
+	;
+
+translation_unit
+	: { enterprog(cal, 0); enterprog(hlt, 0); } external_declaration
+	| translation_unit external_declaration
 	;
 
 external_declaration
@@ -358,9 +598,16 @@ external_declaration
 	| declaration
 	;
 
-translation_unit
-	: external_declaration
-	| translation_unit external_declaration
+function_definition
+	: declaration_specifiers declarator { enterprog(ent, 0); }
+	  declaration_list compound_statement { enterprog(lev, 0); }
+	| declaration_specifiers declarator { enterprog(ent, 0); }
+	  compound_statement { enterprog(lev, 0); }
+	;
+
+declaration_list
+	: declaration
+	| declaration_list declaration
 	;
 
 %%
