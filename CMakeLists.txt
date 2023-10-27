@@ -1,14 +1,15 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.15
-#   date    : 10/23/23
+#   version : 1.16
+#   date    : 10/27/23
 #
 cmake_minimum_required(VERSION 3.0)
 # replace 1.0 by I within percents before posting
-project(MCC VERSION 1.15)
+project(MCC VERSION 1.16)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()
+option(RUN_TESTS "Run standard tests" OFF)
 find_package(BISON)
 find_package(FLEX)
 BISON_TARGET(MyParser ${CMAKE_SOURCE_DIR}/pars.y ${CMAKE_SOURCE_DIR}/pars.c
@@ -25,11 +26,9 @@ add_definitions(-DVERSION="${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
 add_executable(mcc mcc.c ${FLEX_MyScanner_OUTPUTS} ${BISON_MyParser_OUTPUTS}
                name.c ylex.c)
 add_executable(mcd mcd.c name.c)
-add_dependencies(mcd mcc)
 add_executable(mci mci.c name.c)
-add_dependencies(mci mcc)
+add_executable(mcp mcp.c name.c)
 add_executable(mca mca.c)
-add_dependencies(mca mcc)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   add_subdirectory(bdwgc)

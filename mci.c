@@ -1,7 +1,7 @@
 /*
     module  : mci.c
-    version : 1.7
-    date    : 10/23/23
+    version : 1.8
+    date    : 10/27/23
 */
 #include "mcc.h"
 
@@ -30,20 +30,24 @@ int64_t stack[MAXSTK + 1], globl[MAXGLB];
 #ifdef DEBUG
 void debug(instruction *pc)
 {
+    int j;
     operator op;
 
-    if ((op = pc->op) >= '!')
-	printf("%c", op);
+    for (j = 0; operator_NAMES[j]; j++)
+	;
+    if ((op = pc->op) < j)
+	printf("%-9s", operator_NAMES[op]);
     else
-	printf("%s", operator_NAMES[op]);
+	printf("%-9c", op);
     if (op < hlt)
-	printf(" %" PRId64, pc->val);
+	printf("\t%" PRId64, pc->val);
     printf("\n");
 }
 #endif
 
 int main(int argc, char *argv[])
 {
+    int i = 0;
     FILE *fp;
     int32_t m;
     instruction *pc;
@@ -61,7 +65,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr, "%s (file not found)\n", argv[1]);
 	return 1;
     }
-    fread(str, sizeof(int64_t), 2, fp);				/* header */
+    fread(str, sizeof(int64_t), 3, fp);				/* header */
     for (pc = codes; fread(&op, 1, 1, fp); pc++)		/* opcode */
 	if ((pc->op = op) < hlt) {
 	    if (op < jmp)
@@ -120,13 +124,22 @@ int main(int argc, char *argv[])
 	case loadglobl:			/* load global integer */
 	    ax = globl[ax];
 	    break;
+	case loadadr:			/* load integer from address */
+	    ax = *(int64_t *)ax;
+	    break;
 	case storlocal:			/* store integer local */
 	    bp[*sp++] = ax;
 	    break;
 	case storglobl:			/* store integer global */
 	    globl[*sp++] = ax;
 	    break;
+	case storadr:			/* store integer at address */
+	    *(int64_t *)*sp++ = ax;
+	    break;
 	case push:			/* push the value of ax onto stack */
+	    *--sp = ax;
+	    break;
+	case pushadr:			/* push the address in ax onto stack */
 	    *--sp = ax;
 	    break;
 	case '*':			/* dereference */
@@ -135,19 +148,19 @@ int main(int argc, char *argv[])
 	case '-':			/* unary operator MINUS */
 	    ax = -ax;
 	    break;
-	case '~':			/* unary operator NOT */
+	case '~':			/* bitwise operator NOT */
 	    ax = ~ax;
 	    break;
 	case '!':			/* boolean operator NOT */
 	    ax = 1 - ax;
 	    break;
-	case orr:
+	case bit_or:
 	    ax = *sp++ | ax;
 	    break;
-	case xrr:
+	case bit_xor:
 	    ax = *sp++ ^ ax;
 	    break;
-	case ann:
+	case bit_and:
 	    ax = *sp++ & ax;
 	    break;
 	case eql:

@@ -1,7 +1,7 @@
 /*
     module  : name.c
-    version : 1.5
-    date    : 10/23/23
+    version : 1.6
+    date    : 10/27/23
 */
 char *operator_NAMES[] = {
     "LOADIMMED",	/* load immediate */
@@ -16,9 +16,12 @@ char *operator_NAMES[] = {
     "LEAVE",		/* function leave */
     "LOADLOCAL",	/* load integer from stack */
     "LOADGLOBL",	/* load global integer */
+    "LOADADR",		/* load address */
     "STORLOCAL",	/* store integer on stack */
     "STORGLOBL",	/* store global integer */
+    "STORADR",		/* store value at address */
     "PUSH",		/* push value on stack */
+    "PUSHADR",		/* push address on stack */
     "OR",
     "XOR",
     "AND",
@@ -34,8 +37,9 @@ char *operator_NAMES[] = {
     "SUB",
     "MUL",
     "DIV",
+    "!",
     "MOD",
     "WRITEBOOL",
-    "WRITEINT",		/* 32 */
+    "WRITEINT",		/* 36 */
     0
 };

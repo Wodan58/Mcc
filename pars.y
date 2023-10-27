@@ -1,8 +1,8 @@
 %{
 /*
     module  : pars.y
-    version : 1.15
-    date    : 10/23/23
+    version : 1.16
+    date    : 10/27/23
 */
 #include "mcc.h"
 
@@ -197,13 +197,13 @@ inclusive_or_expression
 logical_and_expression
 	: inclusive_or_expression
 	| logical_and_expression AND_OP { enterprog(push, 0); }
-	  inclusive_or_expression { enterprog(ann, 0); }
+	  inclusive_or_expression { enterprog(bit_and, 0); }
 	;
 
 logical_or_expression
 	: logical_and_expression
 	| logical_or_expression OR_OP { enterprog(push, 0); }
-	  logical_and_expression { enterprog(orr, 0); }
+	  logical_and_expression { enterprog(bit_or, 0); }
 	;
 
 conditional_expression
@@ -218,7 +218,8 @@ assign
 assignment_expression
 	: conditional_expression
 	| unary_expression assign assignment_operator assignment_expression
-	  { enterprog($2 == loadlocal ? storlocal : storglobl, 0); }
+	  { enterprog($2 == '*' ? storadr : ($2 == loadlocal ? storlocal :
+	    storglobl), 0); }
 	;
 
 assignment_operator

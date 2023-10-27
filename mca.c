@@ -1,7 +1,7 @@
 /*
     module  : mca.c
-    version : 1.6
-    date    : 10/23/23
+    version : 1.7
+    date    : 10/27/23
 */
 #include "mcc.h"
 
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr, "%s (file not found)\n", argv[1]);
 	return 1;
     }
-    fread(str, sizeof(int64_t), 2, fp);				/* header */
+    fread(str, sizeof(int64_t), 3, fp);				/* header */
     for (pc = codes; fread(&op, 1, 1, fp); pc++)		/* opcode */
 	if ((pc->op = op) < hlt) {
 	    if (op < jmp)
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 		printf("\tlea rax, [rbp+%" PRId64 "]\n", pc->val * 8);
 	    break;
 	case globladr:			/* calculate global address */
-	    printf("\tmov rax, [rbx+%" PRId64 "]\n", pc->val * 8);
+	    printf("\tlea rax, [rbx+%" PRId64 "]\n", pc->val * 8);
 	    break;
 	case jmp:			/* jump to address */
 	    printf("\tjmp L%" PRId64 "\n", pc->val);
@@ -120,6 +120,9 @@ int main(int argc, char *argv[])
 	case loadglobl:			/* load global integer */
 	    printf("\tmov rax, [rbx+rax*8]\n");
 	    break;
+	case loadadr:			/* load integer from address */
+	    printf("\tmov rax, [rax]\n");
+	    break;
 	case storlocal:			/* store integer local */
 	    printf("\tpop rcx\n");
 	    printf("\tmov [rbp+rcx*8], rax\n");
@@ -128,7 +131,14 @@ int main(int argc, char *argv[])
 	    printf("\tpop rcx\n");
 	    printf("\tmov [rbx+rcx*8], rax\n");
 	    break;
+	case storadr:			/* store integer at address */
+	    printf("\tpop rcx\n");
+	    printf("\tmov [rcx], rax\n");
+	    break;
 	case push:			/* push the value of rax onto stack */
+	    printf("\tpush rax\n");
+	    break;
+	case pushadr:			/* push address in rax onto stack */
 	    printf("\tpush rax\n");
 	    break;
 	case '*':			/* unary operator DEREF */
@@ -138,22 +148,22 @@ int main(int argc, char *argv[])
 	    printf("\tneg rax\n");
 	    break;
 	case '~':
-	    printf("\tnot rax\n");	/* unary operator NOT */
+	    printf("\tnot rax\n");	/* bitwise operator NOT */
 	    break;
-	case '!':
+	case '!':			/* logical operator NOT */
 	    printf("\ttest rax, rax\n");
 	    printf("\tsete al\n");
 	    printf("\tmovzx rax, al\n");
 	    break;
-	case orr:
+	case bit_or:
 	    printf("\tpop rcx\n");
 	    printf("\tor rax, rcx\n");
 	    break;
-	case xrr:
+	case bit_xor:
 	    printf("\tpop rcx\n");
 	    printf("\txor rax, rcx\n");
 	    break;
-	case ann:
+	case bit_and:
 	    printf("\tpop rcx\n");
 	    printf("\tand rax, rcx\n");
 	    break;

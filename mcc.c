@@ -1,7 +1,7 @@
 /*
     module  : mcc.c
-    version : 1.10
-    date    : 10/23/23
+    version : 1.11
+    date    : 10/27/23
 */
 #include "mcc.h"
 
@@ -40,14 +40,17 @@ static symbol_t functions[MAXSYM], globals[MAXSYM], locals[MAXSYM];
  * loadlocal and loadglobl are preceded by loadimmed, that contains the address.
  * assignment requires this address and not the value at the address. That is
  * why load of value is replaced by a push, constituting the first parameter
- * of the assignment expression.
+ * of the assignment expression. In case of indirection it was an address after
+ * all and is replaced by a push of the address.
  */
 operator assign(void)
 {
-    operator op = code[code_idx - 1].op;
+    operator op = code[code_idx - 1].op;		/* inspect last op */
 
-    if (op == loadlocal || op == loadglobl)
-	code[code_idx - 1].op = push;
+    if (op == '*')
+	code[code_idx - 1].op = pushadr;		/* push real address */
+    else if (op == loadlocal || op == loadglobl)
+	code[code_idx - 1].op = push;			/* push rel address */
     return op;
 }
 
@@ -65,9 +68,9 @@ void enterprog(operator op, int64_t val)
      */
     if (op == '&') {
 	if (code[--code_idx].op == loadlocal)
-	    code[code_idx - 1].op = localadr;
+	    code[code_idx - 1].op = localadr;		/* relative address */
 	else if (code[code_idx].op == loadglobl)
-	    code[code_idx - 1].op = globladr;
+	    code[code_idx - 1].op = globladr;		/* relative address */
 	return;
     }
     /*

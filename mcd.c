@@ -1,7 +1,7 @@
 /*
     module  : mcd.c
-    version : 1.5
-    date    : 10/23/23
+    version : 1.6
+    date    : 10/27/23
 */
 #include "mcc.h"
 
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     int64_t l;
     int32_t m;
     unsigned char op;
-    char str[MAXLIN], *format = "%d%m%Y 10/23/23M%S", *output = "mcc.out";
+    char str[MAXLIN], *output = "input.bin";		/* default output */
 
     fprintf(stderr, "MCD  -  compiled at %s on %s", __TIME__, __DATE__);
     fprintf(stderr, " (%s)\n", VERSION);
@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     }
     t = time(0);
     tm = localtime(&t);
-    strftime(str, MAXLIN, format, tm);
-    fprintf(fp, "%s\n", str);				/* header */
+    strftime(str, MAXLIN, "%c", tm);			/* no capitals please */
+    fprintf(fp, "%.24s", str);				/* header */
     for (j = 0; operator_NAMES[j]; j++)
 	;
     while (scanf("%" SCNd64 "%s", &l, str) == 2) {

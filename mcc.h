@@ -1,7 +1,7 @@
 /*
     module  : mcc.h
-    version : 1.7
-    date    : 10/23/23
+    version : 1.8
+    date    : 10/27/23
 */
 #include <stdio.h>
 #include <string.h>
@@ -41,27 +41,42 @@ typedef enum operator {
     lev,	/* function leave */
     loadlocal,	/* load integer from stack */
     loadglobl,	/* load global integer */
+    loadadr,	/* load address from stack */
     storlocal,	/* store integer on stack */
     storglobl,	/* store global integer */
+    storadr,	/* store value at address */
     push,	/* push value on stack */
-    orr,
-    xrr,
-    ann,
-    eql,
+    pushadr,	/* push address on stack */
+    bit_or,	/* bitwise operators */
+    bit_xor,
+    bit_and,
+    eql,	/* comparison operators */
     neq,
     lss,
     gtr,
     leq,
     geq,
-    shl,
+    shl,	/* shuffle operators */
     shr,
-    add,
+    add,	/* arithmetic operators */
     sub,
     mul,
     dvd,
+    log_not,	/* !  */
     mod,
-    writebool,
-    writeint	/* 32 */
+    writebool,	/* temporary debugging */
+    writeint	/* 36 */
+		/* %  */
+		/* &  */
+		/*    */
+		/*    */
+		/*    */
+		/* *  */
+		/* +  */
+		/*    */
+		/* -  */
+		/*    */
+		/* /  */
 } operator;
 
 typedef struct instruction {

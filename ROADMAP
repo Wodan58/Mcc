@@ -7,7 +7,6 @@
 	Add [] operator
 	Add sizeof
 	Merge Function with Var
-	Add global variables
 	Add char type
 	-------------
 	Add string literal
