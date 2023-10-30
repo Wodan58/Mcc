@@ -1,4 +1,6 @@
 
+1.17
+	Make pointer arithmetic work
 1.16
 	Add unary & and *
 1.15

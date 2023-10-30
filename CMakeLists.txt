@@ -1,11 +1,11 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.16
-#   date    : 10/27/23
+#   version : 1.17
+#   date    : 10/30/23
 #
 cmake_minimum_required(VERSION 3.0)
 # replace 1.0 by I within percents before posting
-project(MCC VERSION 1.16)
+project(MCC VERSION 1.17)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -26,9 +26,13 @@ add_definitions(-DVERSION="${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
 add_executable(mcc mcc.c ${FLEX_MyScanner_OUTPUTS} ${BISON_MyParser_OUTPUTS}
                name.c ylex.c)
 add_executable(mcd mcd.c name.c)
+add_dependencies(mcd mcc)
 add_executable(mci mci.c name.c)
+add_dependencies(mci mcc)
 add_executable(mcp mcp.c name.c)
+add_dependencies(mcp mcc)
 add_executable(mca mca.c)
+add_dependencies(mca mcc)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   add_subdirectory(bdwgc)

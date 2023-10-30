@@ -1,7 +1,7 @@
 /*
     module  : mca.c
-    version : 1.7
-    date    : 10/27/23
+    version : 1.8
+    date    : 10/30/23
 */
 #include "mcc.h"
 
@@ -76,6 +76,9 @@ int main(int argc, char *argv[])
 	switch (op = pc->op) {
 	case loadimmed:			/* load immediate into A */
 	    printf("\tmov rax, %" PRId64 "\n", pc->val);
+	    break;
+	case loadoffset:		/* add offset to pointer */
+	    printf("\tmov rax, %" PRId64 "\n", pc->val * 8);
 	    break;
 	case localadr:			/* calculate local address */
 	    if (pc->val < 0)
@@ -214,6 +217,12 @@ int main(int argc, char *argv[])
 	    printf("\tpop rcx\n");
 	    printf("\tsub rcx, rax\n");
 	    printf("\tmov rax, rcx\n");
+	    break;
+	case sub_adr:
+	    printf("\tpop rcx\n");
+	    printf("\tsub rcx, rax\n");
+	    printf("\tmov rax, rcx\n");
+	    printf("\tsar rax, 3\n");		/* address to index */
 	    break;
 	case mul:
 	    printf("\tpop rcx\n");

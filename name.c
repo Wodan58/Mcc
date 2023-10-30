@@ -1,12 +1,13 @@
 /*
     module  : name.c
-    version : 1.6
-    date    : 10/27/23
+    version : 1.7
+    date    : 10/30/23
 */
 char *operator_NAMES[] = {
     "LOADIMMED",	/* load immediate */
-    "LOCALADR",		/* immediate local address */
-    "GLOBLADR",		/* immediate global address */
+    "LOADOFFSET",	/* load immediate offset */
+    "LOCALADR",		/* local address */
+    "GLOBLADR",		/* global address */
     "JMP",		/* unconditional jump */
     "JZ",		/* jump if zero */
     "JNZ",		/* jump if not zero */
@@ -36,10 +37,12 @@ char *operator_NAMES[] = {
     "ADD",
     "SUB",
     "MUL",
-    "DIV",
     "!",
-    "MOD",
+    "DIV",
     "WRITEBOOL",
-    "WRITEINT",		/* 36 */
+    "WRITEINT",
+    "MOD",
+    "&",
+    "SUB_ADR",
     0
 };

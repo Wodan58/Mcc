@@ -1,7 +1,7 @@
 /*
     module  : mcd.c
-    version : 1.6
-    date    : 10/27/23
+    version : 1.7
+    date    : 10/30/23
 */
 #include "mcc.h"
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	    if (i < jmp)				/* immediates */
 		fwrite(&l, sizeof(int64_t), 1, fp);	/* full value */
 	    else {
-		m = l;
+		m = (int32_t)l;
 		fwrite(&m, sizeof(int32_t), 1, fp);	/* smaller value */
 	    }
 	}

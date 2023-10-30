@@ -1,7 +1,7 @@
 /*
     module  : mci.c
-    version : 1.8
-    date    : 10/27/23
+    version : 1.9
+    date    : 10/30/23
 */
 #include "mcc.h"
 
@@ -86,6 +86,9 @@ int main(int argc, char *argv[])
 	switch (pc->op) {
 	case loadimmed:			/* load immediate into A */
 	    ax = pc->val;
+	    break;
+	case loadoffset:		/* add immediate to pointer */
+	    ax = pc->val * 8;
 	    break;
 	case localadr:			/* calculate local address */
 	    ax = (int64_t)&bp[pc->val];
@@ -192,6 +195,10 @@ int main(int argc, char *argv[])
 	    break;
 	case sub:
 	    ax = *sp++ - ax;
+	    break;
+	case sub_adr:
+	    ax = *sp++ - ax;
+	    ax >>= 3;
 	    break;
 	case mul:
 	    ax = *sp++ * ax;

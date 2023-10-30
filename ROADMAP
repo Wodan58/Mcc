@@ -1,5 +1,4 @@
 	Add a representative node to each Node to improve error messages
-	Add unary & and *
 	Make pointer arithmetic work
 	Support function call with up to 6 arguments
 	Add one dimensional arrays

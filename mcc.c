@@ -1,7 +1,7 @@
 /*
     module  : mcc.c
-    version : 1.11
-    date    : 10/27/23
+    version : 1.12
+    date    : 10/30/23
 */
 #include "mcc.h"
 
@@ -56,12 +56,43 @@ operator assign(void)
 
 void enterprog(operator op, int64_t val)
 {
-    int index, type;
+    int index;
+    int64_t type;
 
     if (code_idx >= MAXPRG) {
 	yyerror("Exceeding code array");
 	return;
     }
+    /*
+     * A push is replaced by pushadr if the previous statement was an address.
+     */
+    if (op == push && code[code_idx - 1].op != sub_adr) {
+	if (code[code_idx - 1].op == localadr ||
+	    code[code_idx - 1].op == globladr ||
+	    code[code_idx - 2].op == localadr ||
+	    code[code_idx - 2].op == globladr ||
+	    code[code_idx - 2].op == loadoffset)
+	op = pushadr;
+    }
+    /*
+     * An + or - preceded by loadimmed that is preceded by the push of an
+     * address needs to be multiplied by 8. This multiplication is done later.
+     */
+    if (op == add || op == sub) {	/* replace by + and - */
+	if (code[code_idx - 1].op == loadimmed &&
+	    code[code_idx - 2].op == pushadr)
+	    code[code_idx - 1].op = loadoffset;
+	/*
+	 * If addresses are subtracted, then the multiply by 8 must be undone.
+	 */
+	if (op == sub && (code[code_idx - 1].op == localadr ||
+	    code[code_idx - 1].op == globladr))
+	    op = sub_adr;
+#if 0		
+	    code[code_idx - 1].val *= 8;
+#endif	
+    }
+
     /*
      * An address-of operator is preceded by an immediate and a loadlocal or
      * loadglobl. Both can be replaced by localadr or globladr.
@@ -108,7 +139,8 @@ static void enterglobal(void)
 
 void enterlocal(void)
 {
-    int index, type = 1;	/* 1=outside function, 0=inside function */
+    int index;
+    int64_t type = 1;	/* 1=outside function, 0=inside function */
 
     /*
      * See if the declaration is within a function. If not, it is a global
@@ -190,11 +222,14 @@ void dump(void)
     int i;
 
     for (i = 0; i < local_idx; i++)
-	printf("lname = %s, type = %d\n", locals[i].name, locals[i].type);
+	printf("lname = %s, type = %" PRId64 "\n", locals[i].name,
+		locals[i].type);
     for (i = 0; i < global_idx; i++)
-	printf("gname = %s, type = %d\n", globals[i].name, globals[i].type);
+	printf("gname = %s, type = %" PRId64 "\n", globals[i].name,
+		globals[i].type);
     for (i = 0; i < function_idx; i++)
-	printf("fname = %s, type = %d\n", functions[i].name, functions[i].type);
+	printf("fname = %s, type = %" PRId64 "\n", functions[i].name,
+		functions[i].type);
 }
 
 int main(int argc, char *argv[])
