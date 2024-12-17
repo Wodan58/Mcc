@@ -1,7 +1,1 @@
-mcc.tar
-build
-input.bin
-lexr.c
-pars.c
-pars.h
-ATTIC
+*.tar
